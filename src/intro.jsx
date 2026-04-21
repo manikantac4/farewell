@@ -657,11 +657,26 @@ export default function Intro({ onComplete }) {
             }}>
               CLASS OF
             </div>
-            <PointFormationText
-              text="Batch 2022 – 2026 🎓"
-              trigger={batchTrigger}
-              onDone={onBatchDone}
-            />
+            <div className="flex flex-col items-center">
+  <div
+    style={{
+      fontFamily: "'Rajdhani', sans-serif",
+      fontSize: "clamp(0.8rem, 3vw, 1.2rem)",
+      color: "rgba(255,215,0,0.7)",
+      letterSpacing: "0.3em",
+      marginBottom: "6px",
+      textTransform: "uppercase",
+    }}
+  >
+    Batch
+  </div>
+
+  <PointFormationText
+    text="2022 – 2026 🎓"
+    trigger={batchTrigger}
+    onDone={onBatchDone}
+  />
+</div>
           </div>
         )}
 
