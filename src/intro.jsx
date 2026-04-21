@@ -96,6 +96,8 @@ function ParticleCanvas({ active }) {
 }
 
 // ─── Point Formation Text (Batch Scene) ────────────────────────────────────────
+// ─── Point Formation Text (Batch Scene) ────────────────────────────────────────
+// FIXED: Responsive font sizing for both mobile and desktop
 function PointFormationText({ text, trigger, onDone }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ particles: [], phase: "idle", rafId: null });
@@ -106,57 +108,61 @@ function PointFormationText({ text, trigger, onDone }) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // Fix 1: Ensure canvas resolution matches display size perfectly
     const W = canvas.offsetWidth;
-const H = canvas.offsetHeight;
-canvas.width = W;
-canvas.height = H;
+    const H = canvas.offsetHeight;
+    canvas.width = W;
+    canvas.height = H;
 
     const offscreen = document.createElement("canvas");
     offscreen.width = W;
     offscreen.height = H;
     const octx = offscreen.getContext("2d");
 
-    // Fix 2: More aggressive font scaling for the long "Batch 2022 – 2026" string
-    const isMobile = W < 500;
-    // On mobile, we use a smaller ratio (14) to make sure the years don't clip
-    const fontSize = Math.floor(W / (text.length * 0.6));
-    const finalFontSize = Math.max(18, Math.min(fontSize, 48));
-octx.font = `900 ${finalFontSize}px 'Orbitron', sans-serif`;
+    // ✅ FIX: Single clean font size calculation — no override bug
+    // Use a divisor that fits "2022 – 2026" (11 chars) comfortably
+    const charCount = text.replace(/\p{Emoji}/gu, "").trim().length;
+    const rawSize = Math.floor(W / (charCount * 0.72));
+    // Clamp: min 20px so it's always readable, max 64px so it doesn't overflow
+    const fontSize = Math.max(20, Math.min(rawSize, 64));
+
     octx.font = `900 ${fontSize}px 'Orbitron', sans-serif`;
     octx.fillStyle = "#fff";
     octx.textAlign = "center";
     octx.textBaseline = "middle";
 
-    // Strip emoji for sampling
     const sampleText = text.replace(/\p{Emoji}/gu, "").trim();
     octx.fillText(sampleText, W / 2, H / 2);
 
     const imageData = octx.getImageData(0, 0, W, H);
     const data = imageData.data;
     const targets = [];
-    
-    // Fix 3: Crucial - step must be 1 on mobile to capture thin number strokes
-    const step = isMobile ? 1 : 2; 
+
+    // ✅ FIX: step = 1 always so thin strokes on small screens are captured
+    const step = 1;
 
     for (let y = 0; y < H; y += step) {
       for (let x = 0; x < W; x += step) {
         const idx = (y * W + x) * 4;
-        // If pixel is visible (alpha > 128)
         if (data[idx + 3] > 128) {
           targets.push({ x, y });
         }
       }
     }
 
-    // Map targets to particles
-    stateRef.current.particles = targets.map(t => ({
+    // Subsample for performance — keep ~2000 particles max
+    const maxParticles = 2000;
+    const sampled =
+      targets.length > maxParticles
+        ? targets.filter((_, i) => i % Math.ceil(targets.length / maxParticles) === 0)
+        : targets;
+
+    stateRef.current.particles = sampled.map(t => ({
       tx: t.x, ty: t.y,
       x: Math.random() * W,
       y: Math.random() * H,
       vx: 0, vy: 0,
       color: Math.random() > 0.6 ? "#FF69B4" : Math.random() > 0.5 ? "#FFD700" : "#ffffff",
-      size: isMobile ? Math.random() * 1.0 + 0.5 : Math.random() * 1.5 + 0.8,
+      size: Math.random() * 1.5 + 0.8,
     }));
 
     stateRef.current.phase = "forming";
@@ -177,7 +183,7 @@ octx.font = `900 ${finalFontSize}px 'Orbitron', sans-serif`;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist > 0.5) {
             allArrived = false;
-            p.x += dx * 0.15; // Snappy arrival
+            p.x += dx * 0.15;
             p.y += dy * 0.15;
           } else {
             p.x = p.tx;
@@ -189,8 +195,7 @@ octx.font = `900 ${finalFontSize}px 'Orbitron', sans-serif`;
           ctx.fill();
         });
         if (allArrived || frame > 120) stateRef.current.phase = "holding";
-      } 
-      else if (stateRef.current.phase === "holding") {
+      } else if (stateRef.current.phase === "holding") {
         holdFrames++;
         ps.forEach(p => {
           ctx.fillStyle = p.color;
@@ -198,7 +203,7 @@ octx.font = `900 ${finalFontSize}px 'Orbitron', sans-serif`;
           ctx.arc(p.tx, p.ty, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        if (holdFrames > 90) { // 1.5s hold
+        if (holdFrames > 90) {
           stateRef.current.phase = "dispersing";
           ps.forEach(p => {
             const angle = Math.random() * Math.PI * 2;
@@ -207,8 +212,7 @@ octx.font = `900 ${finalFontSize}px 'Orbitron', sans-serif`;
             p.vy = Math.sin(angle) * speed;
           });
         }
-      } 
-      else if (stateRef.current.phase === "dispersing") {
+      } else if (stateRef.current.phase === "dispersing") {
         disperseFrames++;
         ps.forEach(p => {
           p.x += p.vx;
@@ -235,15 +239,18 @@ octx.font = `900 ${finalFontSize}px 'Orbitron', sans-serif`;
   return (
     <canvas
       ref={canvasRef}
-      className="w-full"
-      style={{ 
-        height: "clamp(150px, 35vw, 220px)", // Increased fixed height for mobile safety
+      style={{
+        // ✅ FIX: Tall enough canvas so text is vertically centered with room to spare
+        // width fills container, height is generous so nothing clips
+        width: "100%",
+        height: "clamp(80px, 20vw, 160px)",
+        display: "block",
         maxWidth: "100vw",
-        display: "block"
       }}
     />
   );
 }
+
 // ─── Typewriter with Sparks ────────────────────────────────────────────────────
 function TypewriterLine({ text, delay = 0, onDone, sparkColor1 = "#FFD700", sparkColor2 = "#FF69B4" }) {
   const [displayed, setDisplayed] = useState("");
