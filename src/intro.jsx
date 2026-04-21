@@ -107,9 +107,10 @@ function PointFormationText({ text, trigger, onDone }) {
     const ctx = canvas.getContext("2d");
 
     // Fix 1: Ensure canvas resolution matches display size perfectly
-    const rect = canvas.getBoundingClientRect();
-    const W = (canvas.width = rect.width);
-    const H = (canvas.height = rect.height);
+    const W = canvas.offsetWidth;
+const H = canvas.offsetHeight;
+canvas.width = W;
+canvas.height = H;
 
     const offscreen = document.createElement("canvas");
     offscreen.width = W;
@@ -119,8 +120,9 @@ function PointFormationText({ text, trigger, onDone }) {
     // Fix 2: More aggressive font scaling for the long "Batch 2022 – 2026" string
     const isMobile = W < 500;
     // On mobile, we use a smaller ratio (14) to make sure the years don't clip
-    const fontSize = isMobile ? Math.floor(W / 8) : Math.floor(W / 10);
-    
+    const fontSize = Math.floor(W / (text.length * 0.6));
+    const finalFontSize = Math.max(18, Math.min(fontSize, 48));
+octx.font = `900 ${finalFontSize}px 'Orbitron', sans-serif`;
     octx.font = `900 ${fontSize}px 'Orbitron', sans-serif`;
     octx.fillStyle = "#fff";
     octx.textAlign = "center";
@@ -235,7 +237,7 @@ function PointFormationText({ text, trigger, onDone }) {
       ref={canvasRef}
       className="w-full"
       style={{ 
-        height: "clamp(120px, 25vw, 180px)", // Increased fixed height for mobile safety
+        height: "clamp(150px, 35vw, 220px)", // Increased fixed height for mobile safety
         maxWidth: "100vw",
         display: "block"
       }}
