@@ -776,7 +776,7 @@ export default function Intro({ onComplete }) {
                     onClick={() => {
   setFadeOutAll(true);
   setTimeout(() => {
-    navigate("/background"); // 🔥 THIS IS THE KEY
+    navigate("/quiz"); // 🔥 THIS IS THE KEY
   }, 900);
 }}
                     style={{
