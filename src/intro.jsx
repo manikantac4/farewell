@@ -97,7 +97,6 @@ function ParticleCanvas({ active }) {
 
 // ─── Point Formation Text (Batch Scene) ────────────────────────────────────────
 // ─── Point Formation Text (Batch Scene) ────────────────────────────────────────
-// FIXED: Responsive font sizing for both mobile and desktop
 function PointFormationText({ text, trigger, onDone }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ particles: [], phase: "idle", rafId: null });
@@ -107,41 +106,28 @@ function PointFormationText({ text, trigger, onDone }) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
+    const W = canvas.width = canvas.offsetWidth;
+    const H = canvas.height = canvas.offsetHeight;
 
-    const W = canvas.offsetWidth;
-    const H = canvas.offsetHeight;
-    canvas.width = W;
-    canvas.height = H;
-
+    // Draw text offscreen to sample pixel positions
     const offscreen = document.createElement("canvas");
     offscreen.width = W;
     offscreen.height = H;
     const octx = offscreen.getContext("2d");
 
-    // ✅ FIX: Single clean font size calculation — no override bug
-    // Use a divisor that fits "2022 – 2026" (11 chars) comfortably
-    const charCount = text.replace(/\p{Emoji}/gu, "").trim().length;
-    const rawSize = Math.floor(W / (charCount * 0.72));
-    // Clamp: min 20px so it's always readable, max 64px so it doesn't overflow
-    const fontSize = Math.max(20, Math.min(rawSize, 64));
-
-    octx.font = `900 ${fontSize}px 'Orbitron', sans-serif`;
+    const fontSize = W < 600 ? 36 : 54;
+    octx.font = `900 ${fontSize}px 'Orbitron', monospace`;
     octx.fillStyle = "#fff";
     octx.textAlign = "center";
     octx.textBaseline = "middle";
-
-    const sampleText = text.replace(/\p{Emoji}/gu, "").trim();
-    octx.fillText(sampleText, W / 2, H / 2);
+    octx.fillText(text, W / 2, H / 2);
 
     const imageData = octx.getImageData(0, 0, W, H);
     const data = imageData.data;
     const targets = [];
 
-    // ✅ FIX: step = 1 always so thin strokes on small screens are captured
-    const step = 1;
-
-    for (let y = 0; y < H; y += step) {
-      for (let x = 0; x < W; x += step) {
+    for (let y = 0; y < H; y += 3) {
+      for (let x = 0; x < W; x += 3) {
         const idx = (y * W + x) * 4;
         if (data[idx + 3] > 128) {
           targets.push({ x, y });
@@ -149,20 +135,18 @@ function PointFormationText({ text, trigger, onDone }) {
       }
     }
 
-    // Subsample for performance — keep ~2000 particles max
-    const maxParticles = 2000;
-    const sampled =
-      targets.length > maxParticles
-        ? targets.filter((_, i) => i % Math.ceil(targets.length / maxParticles) === 0)
-        : targets;
-
-    stateRef.current.particles = sampled.map(t => ({
+    // Create particles from random positions
+    stateRef.current.particles = targets.map(t => ({
       tx: t.x, ty: t.y,
       x: Math.random() * W,
       y: Math.random() * H,
       vx: 0, vy: 0,
-      color: Math.random() > 0.6 ? "#FF69B4" : Math.random() > 0.5 ? "#FFD700" : "#ffffff",
-      size: Math.random() * 1.5 + 0.8,
+      color: Math.random() > 0.6
+        ? "#FF69B4"
+        : Math.random() > 0.5
+        ? "#FFD700"
+        : "#ffffff",
+      size: Math.random() * 1.8 + 0.8,
     }));
 
     stateRef.current.phase = "forming";
@@ -181,35 +165,43 @@ function PointFormationText({ text, trigger, onDone }) {
           const dx = p.tx - p.x;
           const dy = p.ty - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > 0.5) {
+          if (dist > 1.5) {
             allArrived = false;
-            p.x += dx * 0.15;
-            p.y += dy * 0.15;
+            p.x += dx * 0.08;
+            p.y += dy * 0.08;
           } else {
             p.x = p.tx;
             p.y = p.ty;
           }
           ctx.fillStyle = p.color;
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = p.color;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        if (allArrived || frame > 120) stateRef.current.phase = "holding";
+        ctx.shadowBlur = 0;
+        if (allArrived || frame > 90) {
+          stateRef.current.phase = "holding";
+        }
       } else if (stateRef.current.phase === "holding") {
         holdFrames++;
         ps.forEach(p => {
           ctx.fillStyle = p.color;
+          ctx.shadowBlur = 3;
+          ctx.shadowColor = p.color;
           ctx.beginPath();
           ctx.arc(p.tx, p.ty, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        if (holdFrames > 90) {
+        ctx.shadowBlur = 0;
+        if (holdFrames > 80) {
           stateRef.current.phase = "dispersing";
           ps.forEach(p => {
             const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 4 + 2;
+            const speed = Math.random() * 4 + 1;
             p.vx = Math.cos(angle) * speed;
-            p.vy = Math.sin(angle) * speed;
+            p.vy = Math.sin(angle) * speed - 1;
           });
         }
       } else if (stateRef.current.phase === "dispersing") {
@@ -217,40 +209,41 @@ function PointFormationText({ text, trigger, onDone }) {
         ps.forEach(p => {
           p.x += p.vx;
           p.y += p.vy;
-          ctx.globalAlpha = Math.max(0, 1 - disperseFrames / 30);
+          p.vy += 0.05;
+          const alpha = Math.max(0, 1 - disperseFrames / 40);
+          ctx.globalAlpha = alpha;
           ctx.fillStyle = p.color;
+          ctx.shadowBlur = 4;
+          ctx.shadowColor = p.color;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.shadowBlur = 0;
         });
-        if (disperseFrames > 32) {
+        if (disperseFrames > 45) {
           cancelAnimationFrame(stateRef.current.rafId);
+          ctx.clearRect(0, 0, W, H);
           onDone && onDone();
           return;
         }
       }
+
       stateRef.current.rafId = requestAnimationFrame(animate);
     };
 
     stateRef.current.rafId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(stateRef.current.rafId);
-  }, [trigger, text]);
+  }, [trigger]);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{
-        // ✅ FIX: Tall enough canvas so text is vertically centered with room to spare
-        // width fills container, height is generous so nothing clips
-        width: "100%",
-        height: "clamp(80px, 20vw, 160px)",
-        display: "block",
-        maxWidth: "100vw",
-      }}
+      className="w-full"
+      style={{ height: "160px" }}
     />
   );
 }
-
 // ─── Typewriter with Sparks ────────────────────────────────────────────────────
 function TypewriterLine({ text, delay = 0, onDone, sparkColor1 = "#FFD700", sparkColor2 = "#FF69B4" }) {
   const [displayed, setDisplayed] = useState("");
