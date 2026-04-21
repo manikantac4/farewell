@@ -106,7 +106,7 @@ function PointFormationText({ text, trigger, onDone }) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // Fix 1: Ensure we use the actual bounding rect for precise pixel mapping
+    // Fix 1: Ensure canvas resolution matches display size perfectly
     const rect = canvas.getBoundingClientRect();
     const W = (canvas.width = rect.width);
     const H = (canvas.height = rect.height);
@@ -116,15 +116,17 @@ function PointFormationText({ text, trigger, onDone }) {
     offscreen.height = H;
     const octx = offscreen.getContext("2d");
 
-    // Fix 2: Better font scaling for mobile (smaller font for long strings)
-    const isSmall = W < 450;
-    const fontSize = isSmall ? Math.floor(W / 12) : Math.floor(W / 15);
+    // Fix 2: More aggressive font scaling for the long "Batch 2022 – 2026" string
+    const isMobile = W < 500;
+    // On mobile, we use a smaller ratio (14) to make sure the years don't clip
+    const fontSize = isMobile ? Math.floor(W / 14) : Math.floor(W / 10);
     
-    octx.font = `900 ${fontSize}px 'Orbitron', monospace`;
+    octx.font = `900 ${fontSize}px 'Orbitron', sans-serif`;
     octx.fillStyle = "#fff";
     octx.textAlign = "center";
     octx.textBaseline = "middle";
 
+    // Strip emoji for sampling
     const sampleText = text.replace(/\p{Emoji}/gu, "").trim();
     octx.fillText(sampleText, W / 2, H / 2);
 
@@ -132,25 +134,27 @@ function PointFormationText({ text, trigger, onDone }) {
     const data = imageData.data;
     const targets = [];
     
-    // Fix 3: High-density sampling for mobile (Step 1) so years are visible
-    const step = isSmall ? 1 : 2; 
+    // Fix 3: Crucial - step must be 1 on mobile to capture thin number strokes
+    const step = isMobile ? 1 : 2; 
 
     for (let y = 0; y < H; y += step) {
       for (let x = 0; x < W; x += step) {
         const idx = (y * W + x) * 4;
+        // If pixel is visible (alpha > 128)
         if (data[idx + 3] > 128) {
           targets.push({ x, y });
         }
       }
     }
 
+    // Map targets to particles
     stateRef.current.particles = targets.map(t => ({
       tx: t.x, ty: t.y,
       x: Math.random() * W,
       y: Math.random() * H,
       vx: 0, vy: 0,
       color: Math.random() > 0.6 ? "#FF69B4" : Math.random() > 0.5 ? "#FFD700" : "#ffffff",
-      size: isSmall ? Math.random() * 1.2 + 0.5 : Math.random() * 1.8 + 0.8,
+      size: isMobile ? Math.random() * 1.0 + 0.5 : Math.random() * 1.5 + 0.8,
     }));
 
     stateRef.current.phase = "forming";
@@ -169,10 +173,10 @@ function PointFormationText({ text, trigger, onDone }) {
           const dx = p.tx - p.x;
           const dy = p.ty - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > 1) {
+          if (dist > 0.5) {
             allArrived = false;
-            p.x += dx * 0.12; // Slightly faster for mobile feel
-            p.y += dy * 0.12;
+            p.x += dx * 0.15; // Snappy arrival
+            p.y += dy * 0.15;
           } else {
             p.x = p.tx;
             p.y = p.ty;
@@ -182,7 +186,7 @@ function PointFormationText({ text, trigger, onDone }) {
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        if (allArrived || frame > 100) stateRef.current.phase = "holding";
+        if (allArrived || frame > 120) stateRef.current.phase = "holding";
       } 
       else if (stateRef.current.phase === "holding") {
         holdFrames++;
@@ -192,11 +196,11 @@ function PointFormationText({ text, trigger, onDone }) {
           ctx.arc(p.tx, p.ty, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        if (holdFrames > 100) {
+        if (holdFrames > 90) { // 1.5s hold
           stateRef.current.phase = "dispersing";
           ps.forEach(p => {
             const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 5 + 2;
+            const speed = Math.random() * 4 + 2;
             p.vx = Math.cos(angle) * speed;
             p.vy = Math.sin(angle) * speed;
           });
@@ -213,7 +217,7 @@ function PointFormationText({ text, trigger, onDone }) {
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        if (disperseFrames > 35) {
+        if (disperseFrames > 32) {
           cancelAnimationFrame(stateRef.current.rafId);
           onDone && onDone();
           return;
@@ -224,20 +228,20 @@ function PointFormationText({ text, trigger, onDone }) {
 
     stateRef.current.rafId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(stateRef.current.rafId);
-  }, [trigger, text]); // Added text to deps
+  }, [trigger, text]);
 
   return (
     <canvas
       ref={canvasRef}
       className="w-full"
       style={{ 
-        height: "clamp(120px, 30vw, 200px)", // Fix 4: Give more height on mobile
-        maxWidth: "100vw" 
+        height: "160px", // Increased fixed height for mobile safety
+        maxWidth: "100vw",
+        display: "block"
       }}
     />
   );
 }
-
 // ─── Typewriter with Sparks ────────────────────────────────────────────────────
 function TypewriterLine({ text, delay = 0, onDone, sparkColor1 = "#FFD700", sparkColor2 = "#FF69B4" }) {
   const [displayed, setDisplayed] = useState("");
