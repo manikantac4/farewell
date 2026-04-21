@@ -99,7 +99,6 @@ function ParticleCanvas({ active }) {
 function PointFormationText({ text, trigger, onDone }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ particles: [], phase: "idle", rafId: null });
-  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!trigger) return;
@@ -107,29 +106,34 @@ function PointFormationText({ text, trigger, onDone }) {
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
-    // Use the actual rendered size
-    const W = canvas.width = canvas.offsetWidth;
-    const H = canvas.height = canvas.offsetHeight;
+    // Fix 1: Ensure we use the actual bounding rect for precise pixel mapping
+    const rect = canvas.getBoundingClientRect();
+    const W = (canvas.width = rect.width);
+    const H = (canvas.height = rect.height);
 
     const offscreen = document.createElement("canvas");
     offscreen.width = W;
     offscreen.height = H;
     const octx = offscreen.getContext("2d");
 
-    // Scale font to screen — smaller on narrow viewports
-    const fontSize = W < 420 ? Math.floor(W / 10) : W < 600 ? 36 : 54;
+    // Fix 2: Better font scaling for mobile (smaller font for long strings)
+    const isSmall = W < 450;
+    const fontSize = isSmall ? Math.floor(W / 12) : Math.floor(W / 15);
+    
     octx.font = `900 ${fontSize}px 'Orbitron', monospace`;
     octx.fillStyle = "#fff";
     octx.textAlign = "center";
     octx.textBaseline = "middle";
-    // Strip emoji for pixel sampling; draw separately for display
+
     const sampleText = text.replace(/\p{Emoji}/gu, "").trim();
     octx.fillText(sampleText, W / 2, H / 2);
 
     const imageData = octx.getImageData(0, 0, W, H);
     const data = imageData.data;
     const targets = [];
-    const step = W < 420 ? 2 : 3;
+    
+    // Fix 3: High-density sampling for mobile (Step 1) so years are visible
+    const step = isSmall ? 1 : 2; 
 
     for (let y = 0; y < H; y += step) {
       for (let x = 0; x < W; x += step) {
@@ -145,12 +149,8 @@ function PointFormationText({ text, trigger, onDone }) {
       x: Math.random() * W,
       y: Math.random() * H,
       vx: 0, vy: 0,
-      color: Math.random() > 0.6
-        ? "#FF69B4"
-        : Math.random() > 0.5
-        ? "#FFD700"
-        : "#ffffff",
-      size: Math.random() * 1.8 + 0.8,
+      color: Math.random() > 0.6 ? "#FF69B4" : Math.random() > 0.5 ? "#FFD700" : "#ffffff",
+      size: isSmall ? Math.random() * 1.2 + 0.5 : Math.random() * 1.8 + 0.8,
     }));
 
     stateRef.current.phase = "forming";
@@ -169,82 +169,71 @@ function PointFormationText({ text, trigger, onDone }) {
           const dx = p.tx - p.x;
           const dy = p.ty - p.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > 1.5) {
+          if (dist > 1) {
             allArrived = false;
-            p.x += dx * 0.08;
-            p.y += dy * 0.08;
+            p.x += dx * 0.12; // Slightly faster for mobile feel
+            p.y += dy * 0.12;
           } else {
             p.x = p.tx;
             p.y = p.ty;
           }
           ctx.fillStyle = p.color;
-          ctx.shadowBlur = 4;
-          ctx.shadowColor = p.color;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        ctx.shadowBlur = 0;
-        if (allArrived || frame > 90) {
-          stateRef.current.phase = "holding";
-        }
-      } else if (stateRef.current.phase === "holding") {
+        if (allArrived || frame > 100) stateRef.current.phase = "holding";
+      } 
+      else if (stateRef.current.phase === "holding") {
         holdFrames++;
         ps.forEach(p => {
           ctx.fillStyle = p.color;
-          ctx.shadowBlur = 3;
-          ctx.shadowColor = p.color;
           ctx.beginPath();
           ctx.arc(p.tx, p.ty, p.size, 0, Math.PI * 2);
           ctx.fill();
         });
-        ctx.shadowBlur = 0;
-        if (holdFrames > 80) {
+        if (holdFrames > 100) {
           stateRef.current.phase = "dispersing";
           ps.forEach(p => {
             const angle = Math.random() * Math.PI * 2;
-            const speed = Math.random() * 4 + 1;
+            const speed = Math.random() * 5 + 2;
             p.vx = Math.cos(angle) * speed;
-            p.vy = Math.sin(angle) * speed - 1;
+            p.vy = Math.sin(angle) * speed;
           });
         }
-      } else if (stateRef.current.phase === "dispersing") {
+      } 
+      else if (stateRef.current.phase === "dispersing") {
         disperseFrames++;
         ps.forEach(p => {
           p.x += p.vx;
           p.y += p.vy;
-          p.vy += 0.05;
-          const alpha = Math.max(0, 1 - disperseFrames / 40);
-          ctx.globalAlpha = alpha;
+          ctx.globalAlpha = Math.max(0, 1 - disperseFrames / 30);
           ctx.fillStyle = p.color;
-          ctx.shadowBlur = 4;
-          ctx.shadowColor = p.color;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
           ctx.fill();
-          ctx.globalAlpha = 1;
-          ctx.shadowBlur = 0;
         });
-        if (disperseFrames > 45) {
+        if (disperseFrames > 35) {
           cancelAnimationFrame(stateRef.current.rafId);
-          ctx.clearRect(0, 0, W, H);
           onDone && onDone();
           return;
         }
       }
-
       stateRef.current.rafId = requestAnimationFrame(animate);
     };
 
     stateRef.current.rafId = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(stateRef.current.rafId);
-  }, [trigger]);
+  }, [trigger, text]); // Added text to deps
 
   return (
     <canvas
       ref={canvasRef}
       className="w-full"
-      style={{ height: "clamp(100px, 22vw, 160px)" }}
+      style={{ 
+        height: "clamp(120px, 30vw, 200px)", // Fix 4: Give more height on mobile
+        maxWidth: "100vw" 
+      }}
     />
   );
 }
