@@ -643,34 +643,26 @@ export default function Intro({ onComplete }) {
 
         {/* ── Scene 3: Batch Formation ── */}
         {scene === 3 && (
-          <div className="flex flex-col items-center">
-  {/* 🔥 FIXED BATCH TEXT */}
-  <div
-    style={{
-      fontFamily: "'Orbitron', monospace",
-      fontSize: "clamp(1.2rem, 5vw, 2rem)",
-      color: "#FFD700",
-      letterSpacing: "0.25em",
-      marginBottom: "10px",
-      textTransform: "uppercase",
-      textAlign: "center",
-      textShadow: "0 0 10px rgba(255,215,0,0.8), 0 0 20px rgba(255,215,0,0.4)",
-      zIndex: 20,
-      position: "relative"
-    }}
-  >
-    Batch
-  </div>
-
-  {/* 🔥 ADD SPACE FOR CANVAS */}
-  <div style={{ marginTop: "8px" }}>
-    <PointFormationText
-      text="2022 – 2026 🎓"
-      trigger={batchTrigger}
-      onDone={onBatchDone}
-    />
-  </div>
-</div>
+          <div
+            className="absolute inset-0 flex flex-col items-center justify-center"
+            style={{ zIndex: 15, padding: "0 16px" }}
+          >
+            <div style={{
+              fontFamily: "'Rajdhani', sans-serif",
+              fontSize: "clamp(0.6rem, 2.5vw, 1rem)",
+              color: "rgba(255,215,0,0.6)",
+              letterSpacing: "0.4em",
+              marginBottom: "8px",
+              textTransform: "uppercase",
+            }}>
+              CLASS OF
+            </div>
+            <PointFormationText
+              text="Batch 2022 – 2026 🎓"
+              trigger={batchTrigger}
+              onDone={onBatchDone}
+            />
+          </div>
         )}
 
         {/* ── Scene 4+: Typewriter Emotional Lines ── */}
