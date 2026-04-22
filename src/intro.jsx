@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import introSong from "./assets/introsong.mp3"; // ✦ Import your audio file
 
-// ─── Audio Hook - Audio starts on USER ACTION only ───────────────────────────
+// ─── Audio Hook - Simple Auto-Play with Fallback ───────────────────────────
 function useBackgroundMusic() {
   const audioRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const playMusic = () => {
     if (!audioRef.current) {
@@ -14,7 +15,24 @@ function useBackgroundMusic() {
       audioRef.current = audio;
     }
 
-    audioRef.current.play().catch(err => console.log("Audio play error:", err));
+    audioRef.current.play()
+      .then(() => {
+        setIsPlaying(true);
+        console.log("✅ Music playing!");
+      })
+      .catch(err => {
+        console.log("⚠️ Audio play failed:", err);
+        // Fallback: Try again on user click
+        document.addEventListener('click', attemptPlay, { once: true });
+      });
+  };
+
+  const attemptPlay = () => {
+    if (audioRef.current && !isPlaying) {
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch(e => console.log(e));
+    }
   };
 
   const stopMusic = () => {
@@ -25,6 +43,7 @@ function useBackgroundMusic() {
         if (currentVolume <= 0) {
           audioRef.current.pause();
           audioRef.current.currentTime = 0;
+          setIsPlaying(false);
           clearInterval(volumeInterval);
         } else {
           audioRef.current.volume = currentVolume;
@@ -33,7 +52,7 @@ function useBackgroundMusic() {
     }
   };
 
-  return { playMusic, stopMusic };
+  return { playMusic, stopMusic, isPlaying };
 }
 
 // ─── Responsive hook ───────────────────────────────────────────────────────────
@@ -520,8 +539,20 @@ export default function Intro({ onComplete }) {
   const isMobile = w < 640;
   const navigate = useNavigate();
 
-  // ✅ FIXED: Audio hook initialized - NO autoplay
-  const { playMusic, stopMusic } = useBackgroundMusic();
+  // ✅ FIXED: Audio hook initialized
+  const { playMusic, stopMusic, isPlaying } = useBackgroundMusic();
+
+  // ✅ PLAY MUSIC WHEN PAGE LOADS (Scene 1 = VRSEC)
+  useEffect(() => {
+    if (scene === 1 && !isPlaying) {
+      // Try to play immediately
+      const timer = setTimeout(() => {
+        playMusic();
+        console.log("🎵 Music triggered with VRSEC scene!");
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [scene, isPlaying, playMusic]);
 
   const onVrsecDone = () => setShowIT(true);
   const onITDone = () => {
@@ -550,12 +581,11 @@ export default function Intro({ onComplete }) {
     }
   }, [scene]);
 
-  // ✅ FIXED: Music starts on button click (user interaction)
+  // ✅ Stop music when navigating
   const handleStartExperience = () => {
     setFadeOutAll(true);
-    playMusic(); // 🔥 START MUSIC ON CLICK (NOT BEFORE)
     setTimeout(() => {
-      stopMusic(); // Fade out while navigating
+      stopMusic();
       navigate("/quiz");
     }, 900);
   };
