@@ -1,5 +1,76 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import introSong from "./assets/introsong.mp3"; // ✦ Import your audio file
+
+// ─── Audio Hook for Background Music ───────────────────────────────────────
+function useBackgroundMusic(shouldPlay = true) {
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      // Create audio element only once
+      const audio = new Audio(introSong);
+      audio.loop = true;
+      audio.volume = 0.4; // Set volume to 40% for ambient feel
+      audioRef.current = audio;
+    }
+
+    const audio = audioRef.current;
+
+    if (shouldPlay) {
+      // Play with fade in effect
+      audio.volume = 0;
+      audio.play().catch(err => console.log("Audio autoplay blocked:", err));
+      
+      let currentVolume = 0;
+      const volumeInterval = setInterval(() => {
+        currentVolume += 0.02;
+        if (currentVolume >= 0.4) {
+          audio.volume = 0.4;
+          clearInterval(volumeInterval);
+        } else {
+          audio.volume = currentVolume;
+        }
+      }, 50);
+
+      return () => clearInterval(volumeInterval);
+    } else {
+      // Fade out effect when stopping
+      let currentVolume = audio.volume;
+      const volumeInterval = setInterval(() => {
+        currentVolume -= 0.05;
+        if (currentVolume <= 0) {
+          audio.pause();
+          audio.currentTime = 0;
+          clearInterval(volumeInterval);
+        } else {
+          audio.volume = currentVolume;
+        }
+      }, 50);
+
+      return () => clearInterval(volumeInterval);
+    }
+  }, [shouldPlay]);
+
+  const stopMusic = () => {
+    if (audioRef.current) {
+      let currentVolume = audioRef.current.volume;
+      const volumeInterval = setInterval(() => {
+        currentVolume -= 0.08;
+        if (currentVolume <= 0) {
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+          clearInterval(volumeInterval);
+        } else {
+          audioRef.current.volume = currentVolume;
+        }
+      }, 30);
+    }
+  };
+
+  return { stopMusic };
+}
+
 // ─── Responsive hook ───────────────────────────────────────────────────────────
 function useWindowSize() {
   const [size, setSize] = useState({ w: 375, h: 667 });
@@ -95,7 +166,6 @@ function ParticleCanvas({ active }) {
   );
 }
 
-// ─── Point Formation Text (Batch Scene) ────────────────────────────────────────
 // ─── Point Formation Text (Batch Scene) ────────────────────────────────────────
 function PointFormationText({ text, trigger, onDone }) {
   const canvasRef = useRef(null);
@@ -244,6 +314,7 @@ function PointFormationText({ text, trigger, onDone }) {
     />
   );
 }
+
 // ─── Typewriter with Sparks ────────────────────────────────────────────────────
 function TypewriterLine({ text, delay = 0, onDone, sparkColor1 = "#FFD700", sparkColor2 = "#FF69B4" }) {
   const [displayed, setDisplayed] = useState("");
@@ -484,6 +555,9 @@ export default function Intro({ onComplete }) {
   const isMobile = w < 640;
   const navigate = useNavigate();
 
+  // ✦ Initialize background music
+  const { stopMusic } = useBackgroundMusic(true);
+
   const onVrsecDone = () => setShowIT(true);
   const onITDone = () => {
     setTimeout(() => {
@@ -510,6 +584,15 @@ export default function Intro({ onComplete }) {
       setTimeout(() => setTwLine(1), 300);
     }
   }, [scene]);
+
+  // ✦ Handle navigation and stop music
+  const handleStartExperience = () => {
+    setFadeOutAll(true);
+    stopMusic(); // Stop music immediately with fade out
+    setTimeout(() => {
+      navigate("/quiz");
+    }, 900);
+  };
 
   return (
     <>
@@ -643,31 +726,30 @@ export default function Intro({ onComplete }) {
             style={{ zIndex: 15, padding: "0 16px" }}
           >
             <div className="flex flex-col items-center">
-  
-  {/* 🔥 BATCH TEXT */}
-  <div
-    style={{
-      fontFamily: "'Orbitron', monospace",
-      fontSize: "clamp(1.2rem, 5vw, 2rem)",
-      color: "#FFD700",
-      letterSpacing: "0.25em",
-      marginBottom: "10px",
-      textTransform: "uppercase",
-      textAlign: "center",
-      textShadow: "0 0 10px rgba(255,215,0,0.8)"
-    }}
-  >
-    Batch
-  </div>
+              {/* 🔥 BATCH TEXT */}
+              <div
+                style={{
+                  fontFamily: "'Orbitron', monospace",
+                  fontSize: "clamp(1.2rem, 5vw, 2rem)",
+                  color: "#FFD700",
+                  letterSpacing: "0.25em",
+                  marginBottom: "10px",
+                  textTransform: "uppercase",
+                  textAlign: "center",
+                  textShadow: "0 0 10px rgba(255,215,0,0.8)"
+                }}
+              >
+                Batch
+              </div>
 
-  {/* 🔥 ONLY YEARS IN CANVAS */}
-  <PointFormationText
-    text="2022 – 2026"
-    trigger={batchTrigger}
-    onDone={onBatchDone}
-  />
+              {/* 🔥 ONLY YEARS IN CANVAS */}
+              <PointFormationText
+                text="2022 – 2026"
+                trigger={batchTrigger}
+                onDone={onBatchDone}
+              />
 
-</div>
+            </div>
           </div>
         )}
 
@@ -773,12 +855,7 @@ export default function Intro({ onComplete }) {
                     Ready to relive it?
                   </div>
                   <button
-                    onClick={() => {
-  setFadeOutAll(true);
-  setTimeout(() => {
-    navigate("/quiz"); // 🔥 THIS IS THE KEY
-  }, 900);
-}}
+                    onClick={handleStartExperience}
                     style={{
                       fontFamily: "'Orbitron', monospace",
                       fontWeight: 700,
