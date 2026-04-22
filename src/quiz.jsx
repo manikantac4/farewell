@@ -6,16 +6,25 @@ const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/responses/su
 const SECTIONS = ["ITA", "ITB", "ITC"];
 
 const QUESTIONS = [
-  { id: 1, text: "Who is the best dancer in class?", emoji: "💃🕺", color: "#c084fc" },
-  { id: 2, text: "Who is the cutest girl in class?", emoji: "🌸💖", color: "#f472b6" },
-  { id: 3, text: "Who is the most stylish boy in class?", emoji: "👑✨", color: "#fbbf24" },
-  { id: 4, text: "Who has the best smile in class?", emoji: "😊🌟", color: "#34d399" },
-  { id: 5, text: "Who is the most friendly person?", emoji: "🤝💛", color: "#60a5fa" },
-  { id: 6, text: "Who is the funniest person in class?", emoji: "😂🎭", color: "#fb923c" },
-  { id: 7, text: "Who has the best dressing sense?", emoji: "👗👔", color: "#a78bfa" },
+  { id: 1, text: "Who is the most dramatic person in class?", emoji: "🎭✨", color: "#c084fc" },
+
+  { id: 2, text: "Who is the funniest person in class?", emoji: "😂🎭", color: "#fb923c" },
+
+  { id: 3, text: "Who is the friendliest person in class?", emoji: "🤝😊", color: "#a78bfa" },
+
+  { id: 4, text: "Who is the most hyperactive person in class?", emoji: "⚡🤯", color: "#22c55e" },
+
+  { id: 5, text: "Who is always online 24/7?", emoji: "📱🌙", color: "#38bdf8" },
+
+  { id: 6, text: "Who is the late comer in class?", emoji: "⏰😴", color: "#34d399" },
+
+  { id: 7, text: "Who is the most aesthetic person in class?", emoji: "✨📸", color: "#f472b6" },
+
   { id: 8, text: "Who is the silent killer in class?", emoji: "🔥😈", color: "#f87171" },
-  { id: 9, text: "Who is the most talented person?", emoji: "🎯🏆", color: "#2dd4bf" },
-  { id: 10, text: "Who is the best duo in class?", emoji: "👫💞", color: "#e879f9" },
+
+  { id: 9, text: "Who is the coder of the class?", emoji: "💻⚡", color: "#2dd4bf" },
+
+  { id: 10, text: "Who will become a CEO in the future?", emoji: "👔🚀", color: "#fbbf24" },
 ];
 
 // SVG Icons
@@ -260,7 +269,7 @@ export default function Quiz() {
     if (!inputVal.trim()) return;
     const newAnswers = { ...answers, [q.id]: inputVal.trim() };
     setAnswers(newAnswers);
-
+    
     if (currentQ < QUESTIONS.length - 1) {
       setAnimDir("out");
       setTimeout(() => {
@@ -268,18 +277,29 @@ export default function Quiz() {
         setInputVal("");
         setAnimDir("in");
       }, 400);
-    } else {
-      // Submit
-      setPhase("submit");
-      setSubmitting(true);
-      const payload = {
-        sessionId: sessionId.current,
-        section,
-        answers: QUESTIONS.map(q2 => ({
-          question: q2.text,
-          answer: newAnswers[q2.id] || "",
-        })),
-      };
+    }  else {
+  // 🔥 ADD THIS VALIDATION BEFORE SUBMIT
+
+  const allFilled = QUESTIONS.every(q2 => newAnswers[q2.id]?.trim());
+
+  if (!allFilled) {
+    setError("Fill all answers before submitting");
+    setPhase("quiz");
+    return;
+  }
+
+  // Submit
+  setPhase("submit");
+  setSubmitting(true);
+
+  const payload = {
+    sessionId: sessionId.current,
+    section,
+    answers: QUESTIONS.map(q2 => ({
+      question: q2.text,
+      answer: newAnswers[q2.id],
+    })),
+  };
       try {
         const res = await fetch(BACKEND_URL, {
           method: "POST",
@@ -288,6 +308,8 @@ export default function Quiz() {
         });
 
         const data = await res.json();
+        console.log("Payload:", payload);
+console.log("Response:", data);
 
         if (!res.ok) {
           throw new Error(data.message || "Submission failed");
@@ -458,6 +480,34 @@ export default function Quiz() {
               }}>
               Continue →
             </button>
+
+            {/* Instruction Box */}
+            <div style={{
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 16,
+              padding: "16px 20px",
+              marginTop: 28,
+              textAlign: "left",
+            }}>
+              <p style={{
+                color: "rgba(255,255,255,0.4)",
+                fontSize: 12,
+                fontWeight: 600,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                marginBottom: 8,
+              }}>Instructions</p>
+              <p style={{
+                color: "rgba(255,255,255,0.7)",
+                fontSize: 14,
+                lineHeight: 1.6,
+              }}>
+                ✓ Type the answer for each question only<br/>
+                ✓ Answer format: Roll No<br/>
+                ✓ Example: 228W1A1___
+              </p>
+            </div>
           </div>
         )}
 
@@ -799,7 +849,7 @@ export default function Quiz() {
               padding: "20px 24px",
               backdropFilter: "blur(12px)",
             }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}>📅</div>
+              <div style={{ fontSize: 36, marginBottom: 8 }}></div>
               <p style={{
                 color: "rgba(255,255,255,0.4)",
                 fontSize: 13,

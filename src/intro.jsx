@@ -22,17 +22,7 @@ function useBackgroundMusic() {
       })
       .catch(err => {
         console.log("⚠️ Audio play failed:", err);
-        // Fallback: Try again on user click
-        document.addEventListener('click', attemptPlay, { once: true });
       });
-  };
-
-  const attemptPlay = () => {
-    if (audioRef.current && !isPlaying) {
-      audioRef.current.play()
-        .then(() => setIsPlaying(true))
-        .catch(e => console.log(e));
-    }
   };
 
   const stopMusic = () => {
@@ -526,8 +516,116 @@ function ITScene({ show, onDone }) {
   );
 }
 
+// ─── CLICK TO START SCREEN ────────────────────────────────────────────────────
+function ClickToStartScreen({ onStart }) {
+  const { w } = useWindowSize();
+  const isMobile = w < 640;
+  const [showText, setShowText] = useState(false);
+
+  useEffect(() => {
+    setShowText(true);
+  }, []);
+
+  return (
+    <div
+      className="absolute inset-0 flex items-center justify-center"
+      style={{
+        zIndex: 50,
+        background: "linear-gradient(135deg, #0a0010 0%, #1a0025 30%, #2d0040 55%, #1a0020 75%, #0d000f 100%)",
+      }}
+    >
+      {/* Blur Background */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backdropFilter: "blur(8px)",
+          background: "rgba(0,0,0,0.3)",
+        }}
+      />
+
+      {/* Content */}
+      <div
+        className="relative flex flex-col items-center justify-center"
+        style={{
+          zIndex: 51,
+          textAlign: "center",
+          padding: isMobile ? "20px" : "40px",
+        }}
+      >
+       <div
+  onClick={onStart}
+  style={{
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "20px"
+  }}
+>
+  <div
+  onClick={onStart}
+  style={{
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
+  }}
+>
+  {/* 💬 Bubble */}
+  <div
+    style={{
+      padding: "14px 26px",
+      borderRadius: "30px",
+      background: "linear-gradient(135deg, rgba(255,105,180,0.25), rgba(255,215,0,0.1))",
+      backdropFilter: "blur(12px)",
+      border: "1px solid rgba(255,105,180,0.5)",
+      color: "#fff",
+      fontFamily: "'Orbitron', monospace",
+      fontSize: "clamp(0.8rem, 3vw, 1.2rem)",
+      letterSpacing: "0.25em",
+      textTransform: "uppercase",
+      boxShadow: "0 0 25px rgba(255,105,180,0.6)",
+      animation: "bubbleFloat 2.2s ease-in-out infinite",
+      position: "relative"
+    }}
+  >
+    click
+
+    {/* Tail (chat bubble feel) */}
+    <div
+      style={{
+        position: "absolute",
+        bottom: "-6px",
+        left: "50%",
+        transform: "translateX(-50%) rotate(45deg)",
+        width: "10px",
+        height: "10px",
+        background: "rgba(255,105,180,0.4)",
+        filter: "blur(1px)"
+      }}
+    />
+  </div>
+</div>
+
+  {/* 🔥 Small Hint Glow */}
+  <div
+    style={{
+      width: "80px",
+      height: "2px",
+      background: "linear-gradient(90deg, transparent, #FF69B4, transparent)",
+      animation: "pulseLine 1.5s infinite"
+    }}
+  />
+</div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN INTRO COMPONENT ─────────────────────────────────────────────────────
 export default function Intro({ onComplete }) {
+  const [hasStarted, setHasStarted] = useState(false);
   const [scene, setScene] = useState(1);
   const [showIT, setShowIT] = useState(false);
   const [fadeOut12, setFadeOut12] = useState(false);
@@ -542,17 +640,13 @@ export default function Intro({ onComplete }) {
   // ✅ FIXED: Audio hook initialized
   const { playMusic, stopMusic, isPlaying } = useBackgroundMusic();
 
-  // ✅ PLAY MUSIC WHEN PAGE LOADS (Scene 1 = VRSEC)
-  useEffect(() => {
-    if (scene === 1 && !isPlaying) {
-      // Try to play immediately
-      const timer = setTimeout(() => {
-        playMusic();
-        console.log("🎵 Music triggered with VRSEC scene!");
-      }, 300);
-      return () => clearTimeout(timer);
-    }
-  }, [scene, isPlaying, playMusic]);
+  // ✅ PLAY MUSIC WHEN CLICK TO START (User Interaction)
+  const handleStartClick = () => {
+    setHasStarted(true);
+    // Music plays immediately on user click
+    playMusic();
+    console.log("🎵 Music triggered by user click!");
+  };
 
   const onVrsecDone = () => setShowIT(true);
   const onITDone = () => {
@@ -601,6 +695,16 @@ export default function Intro({ onComplete }) {
           0%, 100% { opacity: 1; }
           50% { opacity: 0; }
         }
+          @keyframes bubbleFloat {
+  0%, 100% {
+    transform: translateY(0);
+    box-shadow: 0 0 20px rgba(255,105,180,0.5);
+  }
+  50% {
+    transform: translateY(-12px);
+    box-shadow: 0 0 40px rgba(255,105,180,0.9);
+  }
+}
         @keyframes spark0 {
           to { transform: translate(12px, -14px); opacity: 0; }
         }
@@ -633,6 +737,18 @@ export default function Intro({ onComplete }) {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+        @keyframes float {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
+        }
       `}</style>
 
       <div
@@ -645,50 +761,59 @@ export default function Intro({ onComplete }) {
           touchAction: "manipulation",
         }}
       >
+        {/* ── CLICK TO START SCREEN ── */}
+        {!hasStarted && (
+          <ClickToStartScreen onStart={handleStartClick} />
+        )}
+
         {/* Ambient pink blobs */}
-        <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
-          <div style={{
-            position: "absolute", top: "10%", left: "5%",
-            width: isMobile ? "70vw" : "40vw",
-            height: isMobile ? "70vw" : "40vw",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(255,20,147,0.12) 0%, transparent 70%)",
-            animation: "bgPulse 4s ease-in-out infinite",
-          }} />
-          <div style={{
-            position: "absolute", bottom: "10%", right: "5%",
-            width: isMobile ? "60vw" : "35vw",
-            height: isMobile ? "60vw" : "35vw",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(255,105,180,0.10) 0%, transparent 70%)",
-            animation: "bgPulse 5s ease-in-out infinite 1s",
-          }} />
-          <div style={{
-            position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-            width: "60vw", height: "30vw",
-            borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(180,0,255,0.06) 0%, transparent 70%)",
-          }} />
-        </div>
+        {hasStarted && (
+          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 1 }}>
+            <div style={{
+              position: "absolute", top: "10%", left: "5%",
+              width: isMobile ? "70vw" : "40vw",
+              height: isMobile ? "70vw" : "40vw",
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(255,20,147,0.12) 0%, transparent 70%)",
+              animation: "bgPulse 4s ease-in-out infinite",
+            }} />
+            <div style={{
+              position: "absolute", bottom: "10%", right: "5%",
+              width: isMobile ? "60vw" : "35vw",
+              height: isMobile ? "60vw" : "35vw",
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(255,105,180,0.10) 0%, transparent 70%)",
+              animation: "bgPulse 5s ease-in-out infinite 1s",
+            }} />
+            <div style={{
+              position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+              width: "60vw", height: "30vw",
+              borderRadius: "50%",
+              background: "radial-gradient(circle, rgba(180,0,255,0.06) 0%, transparent 70%)",
+            }} />
+          </div>
+        )}
 
         {/* Floating stars */}
-        {Array.from({ length: isMobile ? 16 : 24 }).map((_, i) => (
-          <div key={i} className="absolute pointer-events-none" style={{
-            zIndex: 2,
-            left: `${(i * 31 + 7) % 100}%`,
-            top: `${(i * 47 + 13) % 100}%`,
-            width: `${(i % 3) + 1}px`,
-            height: `${(i % 3) + 1}px`,
-            borderRadius: "50%",
-            background: i % 3 === 0 ? "#FF69B4" : i % 3 === 1 ? "#FFD700" : "#fff",
-            opacity: 0.35 + (i % 5) * 0.1,
-            animation: `floatStar ${3 + (i % 4)}s ease-in-out infinite ${(i % 4) * 0.8}s`,
-            boxShadow: `0 0 ${(i % 4) + 2}px currentColor`,
-          }} />
-        ))}
+        {hasStarted && (
+          Array.from({ length: isMobile ? 16 : 24 }).map((_, i) => (
+            <div key={i} className="absolute pointer-events-none" style={{
+              zIndex: 2,
+              left: `${(i * 31 + 7) % 100}%`,
+              top: `${(i * 47 + 13) % 100}%`,
+              width: `${(i % 3) + 1}px`,
+              height: `${(i % 3) + 1}px`,
+              borderRadius: "50%",
+              background: i % 3 === 0 ? "#FF69B4" : i % 3 === 1 ? "#FFD700" : "#fff",
+              opacity: 0.35 + (i % 5) * 0.1,
+              animation: `floatStar ${3 + (i % 4)}s ease-in-out infinite ${(i % 4) * 0.8}s`,
+              boxShadow: `0 0 ${(i % 4) + 2}px currentColor`,
+            }} />
+          ))
+        )}
 
         {/* ── Scene 1 & 2: VRSEC + IT ── */}
-        {(scene === 1 || scene === 2) && (
+        {hasStarted && (scene === 1 || scene === 2) && (
           <div
             className="absolute inset-0"
             style={{
@@ -716,7 +841,7 @@ export default function Intro({ onComplete }) {
         )}
 
         {/* ── Scene 3: Batch Formation ── */}
-        {scene === 3 && (
+        {hasStarted && scene === 3 && (
           <div
             className="absolute inset-0 flex flex-col items-center justify-center"
             style={{ zIndex: 15, padding: "0 16px" }}
@@ -750,7 +875,7 @@ export default function Intro({ onComplete }) {
         )}
 
         {/* ── Scene 4+: Typewriter Emotional Lines ── */}
-        {scene === 4 && (
+        {hasStarted && scene === 4 && (
           <div
             className="absolute inset-0 flex flex-col items-center justify-center"
             style={{
@@ -880,7 +1005,7 @@ export default function Intro({ onComplete }) {
                       e.currentTarget.style.transform = "scale(1)";
                     }}
                   >
-                    ✦ Start Experience ✦
+                    ✦ Reveal the Class Secrets ✦
                   </button>
                 </div>
               )}
