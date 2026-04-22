@@ -2,55 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import introSong from "./assets/introsong.mp3"; // ✦ Import your audio file
 
-// ─── Audio Hook for Background Music ───────────────────────────────────────
-function useBackgroundMusic(shouldPlay = true) {
+// ─── Audio Hook - Audio starts on USER ACTION only ───────────────────────────
+function useBackgroundMusic() {
   const audioRef = useRef(null);
 
-  useEffect(() => {
+  const playMusic = () => {
     if (!audioRef.current) {
-      // Create audio element only once
       const audio = new Audio(introSong);
       audio.loop = true;
-      audio.volume = 0.4; // Set volume to 40% for ambient feel
+      audio.volume = 0.4;
       audioRef.current = audio;
     }
 
-    const audio = audioRef.current;
-
-    if (shouldPlay) {
-      // Play with fade in effect
-      audio.volume = 0;
-      audio.play().catch(err => console.log("Audio autoplay blocked:", err));
-      
-      let currentVolume = 0;
-      const volumeInterval = setInterval(() => {
-        currentVolume += 0.02;
-        if (currentVolume >= 0.4) {
-          audio.volume = 0.4;
-          clearInterval(volumeInterval);
-        } else {
-          audio.volume = currentVolume;
-        }
-      }, 50);
-
-      return () => clearInterval(volumeInterval);
-    } else {
-      // Fade out effect when stopping
-      let currentVolume = audio.volume;
-      const volumeInterval = setInterval(() => {
-        currentVolume -= 0.05;
-        if (currentVolume <= 0) {
-          audio.pause();
-          audio.currentTime = 0;
-          clearInterval(volumeInterval);
-        } else {
-          audio.volume = currentVolume;
-        }
-      }, 50);
-
-      return () => clearInterval(volumeInterval);
-    }
-  }, [shouldPlay]);
+    audioRef.current.play().catch(err => console.log("Audio play error:", err));
+  };
 
   const stopMusic = () => {
     if (audioRef.current) {
@@ -68,7 +33,7 @@ function useBackgroundMusic(shouldPlay = true) {
     }
   };
 
-  return { stopMusic };
+  return { playMusic, stopMusic };
 }
 
 // ─── Responsive hook ───────────────────────────────────────────────────────────
@@ -555,8 +520,8 @@ export default function Intro({ onComplete }) {
   const isMobile = w < 640;
   const navigate = useNavigate();
 
-  // ✦ Initialize background music
-  const { stopMusic } = useBackgroundMusic(true);
+  // ✅ FIXED: Audio hook initialized - NO autoplay
+  const { playMusic, stopMusic } = useBackgroundMusic();
 
   const onVrsecDone = () => setShowIT(true);
   const onITDone = () => {
@@ -585,11 +550,12 @@ export default function Intro({ onComplete }) {
     }
   }, [scene]);
 
-  // ✦ Handle navigation and stop music
+  // ✅ FIXED: Music starts on button click (user interaction)
   const handleStartExperience = () => {
     setFadeOutAll(true);
-    stopMusic(); // Stop music immediately with fade out
+    playMusic(); // 🔥 START MUSIC ON CLICK (NOT BEFORE)
     setTimeout(() => {
+      stopMusic(); // Fade out while navigating
       navigate("/quiz");
     }, 900);
   };
