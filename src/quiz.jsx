@@ -116,87 +116,86 @@ const DuoIcon = ({ color }) => (
 
 const QUESTION_ICONS = [DanceIcon, HeartIcon, CrownIcon, SmileIcon, FriendIcon, LaughIcon, FashionIcon, FireIcon, TrophyIcon, DuoIcon];
 
-// Numeric Keyboard component
-const NumericKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
+// Custom keyboard component with numbers
+const CustomKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
   const rows = [
-    ["1", "2", "3"],
-    ["4", "5", "6"],
-    ["7", "8", "9"],
-    ["0"],
+    ["1","2","3","4","5","6","7","8","9","0"],
+    ["Q","W","E","R","T","Y","U","I","O","P"],
+    ["A","S","D","F","G","H","J","K","L"],
+    ["Z","X","C","V","B","N","M"],
   ];
-
   const btnBase = {
     borderRadius: 8,
     border: "none",
     cursor: "pointer",
     fontWeight: 700,
-    fontSize: 16,
+    fontSize: 14,
     transition: "all 0.12s",
     fontFamily: "inherit",
     userSelect: "none",
     WebkitUserSelect: "none",
   };
-
-  const numKeyStyle = {
+  const keyStyle = {
     ...btnBase,
     background: `rgba(255,255,255,0.08)`,
     color: "#fff",
-    width: 60,
-    height: 60,
-    margin: 6,
+    width: 32,
+    height: 40,
+    margin: 2,
     backdropFilter: "blur(8px)",
     boxShadow: `0 0 8px ${accentColor}33`,
     border: `1px solid ${accentColor}30`,
   };
-
   const specialStyle = {
     ...btnBase,
     background: `${accentColor}33`,
     color: accentColor,
-    height: 60,
-    margin: 6,
-    padding: "0 14px",
+    height: 40,
+    margin: 2,
+    padding: "0 10px",
     border: `1px solid ${accentColor}55`,
-    fontSize: 14,
-    minWidth: 100,
+    fontSize: 13,
   };
 
   return (
     <div style={{
       width: "100%",
-      maxWidth: 280,
+      maxWidth: 420,
       margin: "0 auto",
-      padding: "16px 8px 12px",
+      padding: "10px 4px 4px",
       borderRadius: 16,
       background: "rgba(0,0,0,0.35)",
       backdropFilter: "blur(20px)",
       border: `1px solid ${accentColor}22`,
     }}>
       {rows.map((row, i) => (
-        <div key={i} style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+        <div key={i} style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
           {row.map(k => (
-            <button
-              key={k}
-              style={numKeyStyle}
-              onPointerDown={e => { e.preventDefault(); onKey(k); }}
-            >
+            <button key={k} style={keyStyle}
+              onPointerDown={e => { e.preventDefault(); onKey(k); }}>
               {k}
             </button>
           ))}
         </div>
       ))}
-
-      <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 8 }}>
-        <button
-          style={{ ...specialStyle, flex: 1, maxWidth: 140 }}
-          onPointerDown={e => { e.preventDefault(); onDelete(); }}
-        >
-          ⌫ DEL
+      <div style={{ display: "flex", justifyContent: "center", gap: 4 }}>
+        <button style={{ ...specialStyle, width: 70 }}
+          onPointerDown={e => { e.preventDefault(); onKey(" "); }}>
+          SPACE
         </button>
-        <button
-          style={{ ...specialStyle, flex: 1, maxWidth: 140 }}
-          onPointerDown={e => { e.preventDefault(); onEnter(); }}
-        >
+        <button style={{ ...specialStyle, flex: 1, maxWidth: 160, letterSpacing: 1 }}
+          onPointerDown={undefined}
+          onClick={undefined}>
+          {/* space placeholder */}
+        </button>
+        <button style={{ ...specialStyle, minWidth: 60 }}
+          onPointerDown={e => { e.preventDefault(); onDelete(); }}>
+          ⌫
+        </button>
+      </div>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 4, gap: 4 }}>
+        <button style={{ ...specialStyle, flex: 1, maxWidth: 260, height: 42, fontSize: 15, letterSpacing: 2 }}
+          onPointerDown={e => { e.preventDefault(); onEnter(); }}>
           NEXT →
         </button>
       </div>
@@ -233,7 +232,7 @@ const Particles = ({ color }) => {
 };
 
 export default function Quiz() {
-  const [phase, setPhase] = useState("privacy"); // privacy | section | quiz | submit | done
+  const [phase, setPhase] = useState("anonymous"); // anonymous | section | quiz | submit | done
   const [section, setSection] = useState(null);
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
@@ -241,21 +240,20 @@ export default function Quiz() {
   const [animDir, setAnimDir] = useState("in"); // in | out
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-
   const getSessionId = () => {
     let id = localStorage.getItem("sessionId");
     if (!id) {
-      id = "anon_" + crypto.randomUUID();
+      id = "sess_" + crypto.randomUUID();
       localStorage.setItem("sessionId", id);
     }
     return id;
   };
-
   const sessionId = useRef(getSessionId());
   const q = QUESTIONS[currentQ];
   const Icon = QUESTION_ICONS[currentQ];
   const accentColor = q?.color || "#c084fc";
 
+  const handleKey = (k) => setInputVal(v => v + k);
   const handleDelete = () => setInputVal(v => v.slice(0, -1));
 
   const goNext = async () => {
@@ -294,6 +292,7 @@ export default function Quiz() {
         if (!res.ok) {
           throw new Error(data.message || "Submission failed");
         }
+
       } catch (err) {
         console.error(err);
         setError(err.message);
@@ -305,8 +304,14 @@ export default function Quiz() {
     }
   };
 
+  const handleKeyActual = (k) => {
+    if (k === "a" || k === "l") return; // ignore placeholder
+    setInputVal(v => v + k);
+  };
+
   return (
     <>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -386,80 +391,72 @@ export default function Quiz() {
           zIndex: 0,
         }}/>
 
-        {/* === PRIVACY NOTICE === */}
-        {phase === "privacy" && (
+        {/* === ANONYMOUS ID MESSAGE === */}
+        {phase === "anonymous" && (
           <div style={{
             animation: "scaleIn 0.5s ease",
             textAlign: "center",
             zIndex: 1,
             width: "100%",
-            maxWidth: 420,
-            padding: "20px",
+            maxWidth: 400,
           }}>
             <div style={{
-              fontSize: 56,
-              marginBottom: 16,
+              fontSize: 52,
+              marginBottom: 12,
               animation: "iconFloat 3s ease-in-out infinite",
               display: "inline-block",
             }}>🔒</div>
-
             <h1 style={{
-              fontSize: 28,
+              fontSize: 26,
               fontWeight: 800,
               background: "linear-gradient(135deg, #e879f9, #c084fc, #60a5fa)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               marginBottom: 12,
               letterSpacing: -1,
-            }}>Privacy & Anonymity</h1>
-
+            }}>Your Vote is Safe</h1>
             <p style={{
               color: "rgba(255,255,255,0.7)",
               fontSize: 15,
-              lineHeight: 1.8,
-              marginBottom: 24,
-              textAlign: "left",
-            }}>
-              ✓ <strong>Your Anonymous ID has been saved.</strong><br/>
-              ✓ This ID is <strong>NOT revealed</strong> to anyone.<br/>
-              ✓ Your votes are <strong>completely confidential.</strong><br/>
-              ✓ Data is <strong>never shared</strong> with third parties.<br/>
-              ✓ Your privacy and anonymity are guaranteed.
-            </p>
-
-            <div style={{
-              background: "rgba(255,255,255,0.04)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 16,
-              padding: "16px",
-              marginBottom: 24,
-              fontSize: 13,
-              color: "rgba(255,255,255,0.5)",
+              marginBottom: 16,
               lineHeight: 1.6,
             }}>
-              <p>📋 By voting, you agree that your responses are anonymous and will only be used for creating class superlatives.</p>
-            </div>
+              Your anonymous ID has been saved securely.
+            </p>
+            <p style={{
+              color: "rgba(255,255,255,0.5)",
+              fontSize: 14,
+              marginBottom: 32,
+              lineHeight: 1.6,
+            }}>
+              ✓ It will not be revealed<br/>
+              ✓ It will not be shared<br/>
+              ✓ Your privacy is protected
+            </p>
 
             <button
               onClick={() => setPhase("section")}
               style={{
                 background: "linear-gradient(135deg, #e879f9, #c084fc)",
                 border: "none",
-                borderRadius: 12,
+                borderRadius: 18,
                 padding: "14px 40px",
                 color: "#fff",
                 fontSize: 16,
-                fontWeight: 700,
+                fontWeight: 800,
                 cursor: "pointer",
-                letterSpacing: 1,
-                transition: "all 0.3s ease",
-                boxShadow: "0 8px 24px rgba(232, 121, 249, 0.4)",
+                letterSpacing: 2,
+                transition: "all 0.3s cubic-bezier(.34,1.56,.64,1)",
+                boxShadow: "0 8px 32px rgba(232, 121, 249, 0.3)",
                 fontFamily: "'Sora', sans-serif",
               }}
-              onMouseEnter={e => e.target.style.transform = "translateY(-2px)"}
-              onMouseLeave={e => e.target.style.transform = "translateY(0)"}
-            >
-              I UNDERSTAND ✓
+              onMouseEnter={e => {
+                e.target.style.transform = "translateY(-3px) scale(1.05)";
+              }}
+              onMouseLeave={e => {
+                e.target.style.transform = "translateY(0) scale(1)";
+              }}>
+              Continue →
             </button>
           </div>
         )}
@@ -665,27 +662,25 @@ export default function Quiz() {
                   <div style={{
                     minHeight: 52,
                     padding: "14px 16px",
-                    fontSize: 24,
-                    fontWeight: 700,
+                    fontSize: 20,
+                    fontWeight: 600,
                     color: inputVal ? "#fff" : "rgba(255,255,255,0.3)",
-                    letterSpacing: 2,
+                    letterSpacing: 0.5,
                     fontFamily: "'Sora', sans-serif",
                     position: "relative",
                   }}>
-                    {inputVal || "Enter Roll Number..."}
+                    {inputVal || "Type your answer..."}
                     {/* Cursor */}
-                    {inputVal && (
-                      <span style={{
-                        display: "inline-block",
-                        width: 2,
-                        height: 24,
-                        background: accentColor,
-                        marginLeft: 4,
-                        verticalAlign: "middle",
-                        animation: "pulseGlow 1s ease-in-out infinite",
-                        boxShadow: `0 0 8px ${accentColor}`,
-                      }}/>
-                    )}
+                    <span style={{
+                      display: "inline-block",
+                      width: 2,
+                      height: 22,
+                      background: accentColor,
+                      marginLeft: 2,
+                      verticalAlign: "middle",
+                      animation: "pulseGlow 1s ease-in-out infinite",
+                      boxShadow: `0 0 8px ${accentColor}`,
+                    }}/>
                   </div>
                   {/* Animated underline */}
                   <div style={{
@@ -699,16 +694,36 @@ export default function Quiz() {
               </div>
             </div>
 
-            {/* Numeric Keyboard */}
-            <NumericKeyboard
+            {/* Custom Keyboard */}
+            <CustomKeyboard
               accentColor={accentColor}
-              onKey={(k) => setInputVal(v => v + k)}
+              onKey={(k) => {
+                if (k === "a" || k === "l") return;
+                setInputVal(v => v + k);
+              }}
               onDelete={handleDelete}
               onEnter={goNext}
             />
+            {/* Space bar below keyboard */}
+            <button
+              onPointerDown={(e) => { e.preventDefault(); setInputVal(v => v + " "); }}
+              style={{
+                marginTop: 6,
+                background: `rgba(255,255,255,0.06)`,
+                border: `1px solid ${accentColor}33`,
+                borderRadius: 10,
+                color: "rgba(255,255,255,0.5)",
+                fontSize: 13,
+                fontWeight: 600,
+                padding: "8px 60px",
+                cursor: "pointer",
+                fontFamily: "'Sora', sans-serif",
+              }}>
+              SPACE
+            </button>
 
             {error && (
-              <p style={{ color: "#f87171", fontSize: 13, marginTop: 12 }}>{error}</p>
+              <p style={{ color: "#f87171", fontSize: 13, marginTop: 8 }}>{error}</p>
             )}
           </div>
         )}
