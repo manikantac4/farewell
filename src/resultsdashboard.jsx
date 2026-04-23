@@ -64,149 +64,6 @@ function normalizeRollNumber(rollNo) {
   return null;
 }
 
-// Vote Flow Card - Shows roll number and their votes
-function VoteFlowCard({ rollNumber, voteCount, questionCount, colors }) {
-  const isValid = normalizeRollNumber(rollNumber) !== null;
-  const colorIndex = Math.abs(rollNumber.charCodeAt(0)) % colors.length;
-  const bgColor = colors[colorIndex];
-  
-  return (
-    <div
-      style={{
-        background: isValid
-          ? `linear-gradient(135deg, ${bgColor}33, ${bgColor}11)`
-          : "linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))",
-        border: `2px solid ${isValid ? bgColor : "rgba(255,255,255,0.2)"}`,
-        borderRadius: 12,
-        padding: "clamp(14px, 3vw, 18px)",
-        transition: "all 0.3s ease",
-        cursor: "pointer",
-        position: "relative",
-        overflow: "hidden",
-      }}
-      onMouseEnter={e => {
-        e.currentTarget.style.transform = "translateY(-4px)";
-        e.currentTarget.style.boxShadow = `0 8px 20px ${bgColor}44`;
-      }}
-      onMouseLeave={e => {
-        e.currentTarget.style.transform = "translateY(0)";
-        e.currentTarget.style.boxShadow = "none";
-      }}
-    >
-      {/* Invalid badge */}
-      {!isValid && (
-        <div style={{
-          position: "absolute",
-          top: 8,
-          right: 8,
-          background: "rgba(248, 113, 113, 0.8)",
-          color: "#fff",
-          padding: "4px 8px",
-          borderRadius: 4,
-          fontSize: "10px",
-          fontWeight: 700,
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-        }}>
-          <AlertIcon />
-          Unknown
-        </div>
-      )}
-
-      {/* Roll Number */}
-      <div style={{
-        fontSize: "clamp(13px, 2.5vw, 14px)",
-        color: isValid ? bgColor : "rgba(255,255,255,0.4)",
-        fontWeight: 700,
-        fontFamily: "monospace",
-        letterSpacing: "1px",
-        marginBottom: 10,
-        textTransform: "uppercase",
-      }}>
-        {rollNumber}
-      </div>
-
-      {/* Vote Stats */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 12,
-      }}>
-        {/* Total Votes */}
-        <div style={{
-          background: isValid ? "rgba(255,255,255,0.05)" : "transparent",
-          padding: "8px 10px",
-          borderRadius: 8,
-          textAlign: "center",
-        }}>
-          <div style={{
-            fontSize: "clamp(18px, 4vw, 22px)",
-            fontWeight: 900,
-            color: isValid ? bgColor : "rgba(255,255,255,0.3)",
-            marginBottom: 4,
-          }}>
-            {voteCount}
-          </div>
-          <div style={{
-            fontSize: "clamp(10px, 2vw, 11px)",
-            color: "rgba(255,255,255,0.4)",
-            fontWeight: 600,
-          }}>
-            Votes
-          </div>
-        </div>
-
-        {/* Questions */}
-        <div style={{
-          background: isValid ? "rgba(255,255,255,0.05)" : "transparent",
-          padding: "8px 10px",
-          borderRadius: 8,
-          textAlign: "center",
-        }}>
-          <div style={{
-            fontSize: "clamp(18px, 4vw, 22px)",
-            fontWeight: 900,
-            color: isValid ? bgColor : "rgba(255,255,255,0.3)",
-            marginBottom: 4,
-          }}>
-            {questionCount}
-          </div>
-          <div style={{
-            fontSize: "clamp(10px, 2vw, 11px)",
-            color: "rgba(255,255,255,0.4)",
-            fontWeight: 600,
-          }}>
-            Questions
-          </div>
-        </div>
-      </div>
-
-      {/* Validation indicator */}
-      <div style={{
-        marginTop: 10,
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        fontSize: "clamp(10px, 2vw, 11px)",
-        color: isValid ? "#34d399" : "#f87171",
-      }}>
-        {isValid ? (
-          <>
-            <CheckIcon />
-            <span>Valid Roll Number</span>
-          </>
-        ) : (
-          <>
-            <AlertIcon />
-            <span>Could not verify</span>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // Question Results Section
 function QuestionResults({ question, votes, colors }) {
   const voteCounts = {};
@@ -495,7 +352,7 @@ function SectionDashboard({ section, data, loading, error }) {
         </div>
       </div>
 
-      {/* Contenders Overview */}
+      {/* Top Contender Per Question */}
       <div style={{ marginBottom: "clamp(20px, 4vw, 32px)" }}>
         <h2 style={{
           color: "#fff",
@@ -505,25 +362,166 @@ function SectionDashboard({ section, data, loading, error }) {
           letterSpacing: "0.5px",
           textTransform: "uppercase",
         }}>
-          👥 Contenders Overview
+          🏆 Top Contender per Question
         </h2>
         
         <div style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(clamp(80px, 20vw, 130px), 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(clamp(140px, 35vw, 180px), 1fr))",
           gap: "clamp(10px, 2.5vw, 14px)",
         }}>
-          {Object.entries(allVotes)
-            .sort(([, a], [, b]) => b.valid - a.valid)
-            .map(([rollNo, data]) => (
-              <VoteFlowCard
-                key={rollNo}
-                rollNumber={rollNo}
-                voteCount={data.valid}
-                questionCount={data.questions.size}
-                colors={COLORS}
-              />
-            ))}
+          {Object.entries(questionMap).map(([question, votes], idx) => {
+            const voteCounts = {};
+            votes.forEach(v => {
+              const normalized = normalizeRollNumber(v);
+              if (normalized) {
+                voteCounts[normalized] = (voteCounts[normalized] || 0) + 1;
+              }
+            });
+
+            const topVote = Object.entries(voteCounts)
+              .sort(([, a], [, b]) => b - a)[0];
+            
+            const topRollNo = topVote ? topVote[0] : null;
+            const topVoteCount = topVote ? topVote[1] : 0;
+            const colorIndex = idx % COLORS.length;
+            const bgColor = COLORS[colorIndex];
+
+            return (
+              <div
+                key={idx}
+                style={{
+                  background: `linear-gradient(135deg, ${bgColor}33, ${bgColor}11)`,
+                  border: `2px solid ${bgColor}`,
+                  borderRadius: 12,
+                  padding: "clamp(12px, 3vw, 16px)",
+                  transition: "all 0.3s ease",
+                  cursor: "pointer",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.transform = "translateY(-4px)";
+                  e.currentTarget.style.boxShadow = `0 8px 20px ${bgColor}44`;
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "none";
+                }}
+              >
+                {/* Question Number Badge */}
+                <div style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  background: bgColor,
+                  color: "#000",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "50%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontWeight: 900,
+                  fontSize: "12px",
+                }}>
+                  {idx + 1}
+                </div>
+
+                {/* Question Text */}
+                <div style={{
+                  fontSize: "clamp(11px, 2.5vw, 12px)",
+                  color: "rgba(255,255,255,0.6)",
+                  marginBottom: 12,
+                  lineHeight: 1.3,
+                  paddingRight: 30,
+                }}>
+                  {question}
+                </div>
+
+                {/* Divider */}
+                <div style={{
+                  height: "1px",
+                  background: `${bgColor}44`,
+                  marginBottom: 12,
+                }}/>
+
+                {/* Top Contender Info */}
+                {topRollNo ? (
+                  <div>
+                    <div style={{
+                      fontSize: "clamp(10px, 2vw, 11px)",
+                      color: "rgba(255,255,255,0.4)",
+                      marginBottom: 6,
+                      fontWeight: 600,
+                      letterSpacing: "0.5px",
+                      textTransform: "uppercase",
+                    }}>
+                      Top Vote
+                    </div>
+                    <div style={{
+                      fontSize: "clamp(13px, 3vw, 14px)",
+                      color: bgColor,
+                      fontWeight: 900,
+                      fontFamily: "monospace",
+                      letterSpacing: "1px",
+                      marginBottom: 8,
+                    }}>
+                      {topRollNo}
+                    </div>
+                    <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr",
+                      gap: 6,
+                    }}>
+                      <div style={{
+                        background: "rgba(255,255,255,0.05)",
+                        padding: "6px 10px",
+                        borderRadius: 6,
+                        textAlign: "center",
+                      }}>
+                        <div style={{
+                          fontSize: "clamp(16px, 4vw, 20px)",
+                          fontWeight: 900,
+                          color: bgColor,
+                          marginBottom: 2,
+                        }}>
+                          {topVoteCount}
+                        </div>
+                        <div style={{
+                          fontSize: "clamp(9px, 2vw, 10px)",
+                          color: "rgba(255,255,255,0.4)",
+                          fontWeight: 600,
+                        }}>
+                          Votes
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{
+                      marginTop: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                      fontSize: "clamp(9px, 2vw, 10px)",
+                      color: "#34d399",
+                    }}>
+                      <CheckIcon />
+                      <span>Valid</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{
+                    textAlign: "center",
+                    color: "rgba(255,255,255,0.3)",
+                    fontSize: "clamp(11px, 2.5vw, 12px)",
+                    padding: "10px 0",
+                  }}>
+                    No votes yet
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 
