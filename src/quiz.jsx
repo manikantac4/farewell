@@ -534,7 +534,7 @@ console.log("Response:", data);
               WebkitTextFillColor: "transparent",
               marginBottom: 6,
               letterSpacing: -1,
-            }}>Class Poll 2024</h1>
+            }}>Class Poll </h1>
             <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 36 }}>
               Choose your section to begin
             </p>
@@ -864,7 +864,7 @@ console.log("Response:", data);
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 letterSpacing: 1,
-              }}>April 24, 2025</p>
+              }}>April 24, 2026</p>
               <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginTop: 6 }}>
                 Wait for the surprise! ✨
               </p>
