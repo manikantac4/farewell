@@ -719,7 +719,7 @@ console.log("Response:", data);
                     fontFamily: "'Sora', sans-serif",
                     position: "relative",
                   }}>
-                    {inputVal || "Type your answer..."}
+                    {inputVal || "Enter Roll No (e.g. 228W1A1___)"}
                     {/* Cursor */}
                     <span style={{
                       display: "inline-block",
