@@ -29,11 +29,11 @@ import imgg5 from "./assets/g5.jpg";
 import imgh0 from "./assets/h0.jpg";
 import imgh4 from "./assets/h4.jpg";
 
-import hero from "./assets/hero.png";
+
 
 import imgi1 from "./assets/i1.jpg";
 import imgi3 from "./assets/i3.jpg";
-import img72 from "./assets/72.heif";
+import img72 from "./assets/72.jpg";
 
 
 
