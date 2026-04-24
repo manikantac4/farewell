@@ -9,6 +9,33 @@ import img37 from "./assets/37.jpg";
 import img51 from "./assets/51.jpg";
 import img61 from "./assets/61.jpg";
 import img64 from "./assets/64.jpg";
+import img67 from "./assets/67.jpg";
+import img70 from "./assets/70.jpg";
+import img75 from "./assets/75.jpg";
+import img80 from "./assets/80.jpg";
+import img87 from "./assets/87.jpg";
+
+import imga8 from "./assets/a8.JPG";
+import imgb8 from "./assets/b8.jpeg";
+
+import imge9 from "./assets/e9.jpg";
+
+import imgf2 from "./assets/f2.jpeg";
+import imgf5 from "./assets/f5.png";
+
+import imgg2 from "./assets/g2.jpg";
+import imgg5 from "./assets/g5.jpg";
+
+import imgh0 from "./assets/h0.jpg";
+import imgh4 from "./assets/h4.jpg";
+
+import hero from "./assets/hero.png";
+
+import imgi1 from "./assets/i1.jpg";
+import imgi3 from "./assets/i3.jpg";
+import img72 from "./assets/72.heif";
+
+
 
 const BATCHES = ["ITA", "ITB", "ITC"];
 
@@ -52,28 +79,28 @@ const ANSWERS = {
     10: { name: "Akkalreddy Vijitha Reddy", photo: img01, tag: "Future CEO" },
   },
   ITB: {
-    1:  { name: "Nisha Verma",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB1",  tag: "Most Dramatic"    },
-    2:  { name: "Rohan Kapoor",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB2",  tag: "Funniest"         },
-    3:  { name: "Divya Reddy",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB3",  tag: "Friendliest"      },
-    4:  { name: "Aditya Kumar",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB4",  tag: "Most Hyperactive" },
-    5:  { name: "Kavya Nambiar",   photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB5",  tag: "Always Online 24/7" },
-    6:  { name: "Siddharth Rao",   photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB6",  tag: "Late Comer"       },
-    7:  { name: "Ishita Bose",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB7",  tag: "Most Aesthetic"   },
-    8:  { name: "Nikhil Menon",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB8",  tag: "Silent Killer"    },
-    9:  { name: "Tanvi Pillai",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB9",  tag: "The Coder"        },
-    10: { name: "Abhishek Das",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB10", tag: "Future CEO"       },
+    1:  { name: "Damera Harika",     photo: img80,  tag: "Most Dramatic"    },
+    2:  { name: "Chalamalasetti Abhinaya",    photo: img75,  tag: "Funniest"         },
+    3:  { name: "Meesala Mohan Bala Sahith ",     photo: imga8,  tag: "Friendliest"      },
+    4:  { name: "Bandlamudi Harshitha",    photo: img70,  tag: "Most Hyperactive" },
+    5:  { name: "Ampa Venu",   photo: img67,  tag: "Always Online 24/7" },
+    6:  { name: "Pittala Siddhartha ",   photo: imgb8,  tag: "Late Comer"       },
+    7:  { name: "Bondada Haisha",     photo: img72,  tag: "Most Aesthetic"   },
+    8:  { name: "Gatta Poojitha naga kiranmai",    photo: img87,  tag: "Silent Killer"    },
+    9:  { name: "Damera Harika",    photo: img80,  tag: "The Coder"        },
+    10: { name: "Pittala Siddhartha ",    photo: imgb8,  tag: "Future CEO"       },
   },
   ITC: {
-    1:  { name: "Pooja Malhotra",  photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC1",  tag: "Most Dramatic"    },
-    2:  { name: "Yash Tiwari",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC2",  tag: "Funniest"         },
-    3:  { name: "Lakshmi Iyer",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC3",  tag: "Friendliest"      },
-    4:  { name: "Harsh Pandey",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC4",  tag: "Most Hyperactive" },
-    5:  { name: "Simran Kaur",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC5",  tag: "Always Online 24/7" },
-    6:  { name: "Varun Shetty",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC6",  tag: "Late Comer"       },
-    7:  { name: "Aditi Ghosh",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC7",  tag: "Most Aesthetic"   },
-    8:  { name: "Kartik Pillai",   photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC8",  tag: "Silent Killer"    },
-    9:  { name: "Rhea Chatterjee", photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC9",  tag: "The Coder"        },
-    10: { name: "Manav Jain",      photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITC10", tag: "Future CEO"       },
+    1:  { name: "Sarayu Guntupalli",  photo: imgf2,  tag: "Most Dramatic"    },
+    2:  { name: " Gavara Teja",     photo:imge9,  tag: "Funniest"         },
+    3:  { name: "Gurram Neeraja ",    photo: imgf5,  tag: "Friendliest"      },
+    4:  { name: "lokesh narne",    photo: imgh4 , tag: "Most Hyperactive" },
+    5:  { name: "Kola Divitha ",     photo: imgg2,  tag: "Always Online 24/7" },
+    6:  { name: "Kuppala Ashritha Shyli",    photo: imgg5,  tag: "Late Comer"       },
+    7:  { name: "Pilli Haneesh",     photo: imgi1,  tag: "Most Aesthetic"   },
+    8:  { name: "Potluri Supraja",   photo: imgi3,  tag: "Silent Killer"    },
+    9:  { name: "Matta Eleshaddai Roshan ", photo: imgh0,  tag: "The Coder"        },
+    10: { name: "lokesh narne",      photo: imgh4, tag: "Future CEO"       },
   },
 };
 
