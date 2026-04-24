@@ -1,5 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import Background from "./globalbackground";
+import img01 from "./assets/01.jpg";
+import img03 from "./assets/03.jpg";
+import img04 from "./assets/04.jpg";
+import img14 from "./assets/14.jpg";
+import img20 from "./assets/20.jpg";
+import img37 from "./assets/37.jpg";
+import img51 from "./assets/51.jpg";
+import img61 from "./assets/61.jpg";
+import img64 from "./assets/64.jpg";
 
 const BATCHES = ["ITA", "ITB", "ITC"];
 
@@ -29,17 +38,18 @@ const QUESTIONS = BATCHES.flatMap((batch, bi) =>
 // tag = short award label shown on answer screen
 // ─────────────────────────────────────────────
 const ANSWERS = {
+ 
   ITA: {
-    1:  { name: "Riya Sharma",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA1",  tag: "Most Dramatic"    },
-    2:  { name: "Arjun Mehta",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA2",  tag: "Funniest"         },
-    3:  { name: "Sneha Patel",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA3",  tag: "Friendliest"      },
-    4:  { name: "Karan Nair",      photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA4",  tag: "Most Hyperactive" },
-    5:  { name: "Priya Iyer",      photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA5",  tag: "Always Online 24/7" },
-    6:  { name: "Rahul Gupta",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA6",  tag: "Late Comer"       },
-    7:  { name: "Ananya Singh",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA7",  tag: "Most Aesthetic"   },
-    8:  { name: "Dev Krishnan",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA8",  tag: "Silent Killer"    },
-    9:  { name: "Meera Joshi",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA9",  tag: "The Coder"        },
-    10: { name: "Vikram Desai",    photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITA10", tag: "Future CEO"       },
+    1:  { name: "Chinta Sai Praneeth",  photo: img14, tag: "Most Dramatic" },
+    2:  { name: "bhuvana chandra battula",  photo: img04, tag: "Funniest" },
+    3:  { name: "Pudi Rahul",  photo: img51, tag: "Friendliest" },
+    4:  { name: "A hemanth Venkata Sai",   photo: img03, tag: "Most Hyperactive" },
+    5:  { name: "Turimella Vasavi ",   photo: img61, tag: "Always Online 24/7" },
+    6:  { name: "A hemanth Venkata Sai",  photo: img03, tag: "Late Comer" },
+    7:  { name: "Gontla Venkata Sai Ketan ", photo: img20, tag: "Most Aesthetic" },
+    8:  { name: "Myla Sai Saranya ", photo: img37, tag: "Silent Killer" },
+    9:  { name: "Velpula Vishnu Vardhan",  photo: img64, tag: "The Coder" },
+    10: { name: "Akkalreddy Vijitha Reddy", photo: img01, tag: "Future CEO" },
   },
   ITB: {
     1:  { name: "Nisha Verma",     photo: "https://api.dicebear.com/7.x/avataaars/svg?seed=ITB1",  tag: "Most Dramatic"    },
