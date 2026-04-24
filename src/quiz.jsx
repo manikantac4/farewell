@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import Background from "./globalbackground";
 
-const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/responses/submit"; // 🔗 Replace with your backend URL
+const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/submit";// 🔗 Replace with your backend URL
 
 const SECTIONS = ["ITA", "ITB", "ITC"];
 
