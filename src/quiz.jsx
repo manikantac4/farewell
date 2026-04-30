@@ -4,39 +4,38 @@ import music from "./assets/music.mp3";
 const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/submit";
 
 const QUESTIONS = [
-  { id: 1,  text: "Who is the most active person in the class?",              emoji: "⚡🏃",  color: "#22c55e" },
-  { id: 2,  text: "Who is the most beautiful person in the class?",           emoji: "🌟💫",  color: "#f472b6" },
-  { id: 3,  text: "Who will start their own startup?",                        emoji: "🚀💡",  color: "#fbbf24" },
-  { id: 4,  text: "Who is the best coder in the class?",                      emoji: "💻⚡",  color: "#2dd4bf" },
-  { id: 5,  text: "Who has the best sense of humor?",                         emoji: "😂🎭",  color: "#fb923c" },
-  { id: 6,  text: "Who is the most responsible student?",                     emoji: "📌✅",  color: "#60a5fa" },
-  { id: 7,  text: "Who always comes late but still manages attendance?",      emoji: "⏰😴",  color: "#34d399" },
-  { id: 8,  text: "Who is the most stylish person in the class?",             emoji: "😎✨",  color: "#c084fc" },
-  { id: 9,  text: "Who is most likely to become a CEO?",                      emoji: "🏢👔",  color: "#fbbf24" },
-  { id: 10, text: "Who is best at logical thinking?",                         emoji: "🧠💡",  color: "#38bdf8" },
-  { id: 11, text: "Who is the class entertainer?",                            emoji: "🎭🎪",  color: "#fb923c" },
-  { id: 12, text: "Who is the most disciplined?",                             emoji: "📚⏱️",  color: "#60a5fa" },
-  { id: 13, text: "Who will go abroad for studies?",                          emoji: "✈️🌍",  color: "#a78bfa" },
-  { id: 14, text: "Who studies only before exams but still scores?",          emoji: "📖😅",  color: "#f87171" },
-  { id: 15, text: "Who has the best dressing sense in the class?",            emoji: "👗✨",  color: "#f472b6" },
-  { id: 16, text: "Who is most likely to crack placements easily?",           emoji: "🎯🏆",  color: "#fbbf24" },
-  { id: 17, text: "Who is the most confident speaker?",                       emoji: "🎤💬",  color: "#34d399" },
-  { id: 18, text: "Who is always on their phone?",                            emoji: "📱🌙",  color: "#38bdf8" },
-  { id: 19, text: "Who is the most creative thinker?",                        emoji: "🎨💭",  color: "#c084fc" },
-  { id: 20, text: "Who has the best vibe in the class?",                      emoji: "✨🌈",  color: "#f472b6" },
-  { id: 21, text: "Who will get placed in a top company first?",              emoji: "🏆🚀",  color: "#fbbf24" },
-  { id: 22, text: "Who is the most silent but observes everything?",          emoji: "👀🤫",  color: "#94a3b8" },
-  { id: 23, text: "Who is best at presentations?",                            emoji: "📊🎯",  color: "#60a5fa" },
-  { id: 24, text: "Who is highly talented in class?",                         emoji: "🌈⭐",  color: "#e879f9" },
-  { id: 25, text: "Who is the most punctual student?",                        emoji: "⏱️✅",  color: "#34d399" },
-  { id: 26, text: "Who pretends like doing nothing but does everything?",     emoji: "👻🤫",  color: "#a78bfa" },
-  { id: 27, text: "Who sleeps in class but still scores well?",               emoji: "😴📈",  color: "#fb923c" },
-  { id: 28, text: "Who has aura + infinity?",                                 emoji: "😎✨",  color: "#e879f9" },
-  { id: 29, text: "Who is most likely to become a leader?",                   emoji: "👑🌟",  color: "#fbbf24" },
-  { id: 30, text: "Who is the comedian of the class?",                        emoji: "🤡😂",  color: "#fb923c" },
-  { id: 31, text: "Who is the best frontend developer?",                      emoji: "🎨💻",  color: "#c084fc" },
-  { id: 32, text: "Who is the best backend developer?",                       emoji: "⚙️💻",  color: "#2dd4bf" },
-  { id: 33, text: "Who is the best Class Representative?",                   emoji: "🏅👑",  color: "#fbbf24" },
+  
+  { id: 1,  text: "Who is the most beautiful person in the class?",           emoji: "🌟💫",  color: "#f472b6" },
+  
+  { id: 2,  text: "Who is the best coder in the class?",                      emoji: "💻⚡",  color: "#2dd4bf" },
+  
+  { id: 3,  text: "Who is the most responsible student?",                     emoji: "📌✅",  color: "#60a5fa" },
+  
+  { id: 4,  text: "Who is the most stylish person in the class?",             emoji: "😎✨",  color: "#c084fc" },
+  { id: 5,  text: "Who is most likely to become a CEO?",                      emoji: "🏢👔",  color: "#fbbf24" },
+  { id: 6, text: "Who is best at logical thinking?",                         emoji: "🧠💡",  color: "#38bdf8" },
+  { id: 7, text: "Who is the class entertainer?",                            emoji: "🎭🎪",  color: "#fb923c" },
+  { id: 8, text: "Who is the most disciplined?",                             emoji: "📚⏱️",  color: "#60a5fa" },
+ 
+  { id: 9, text: "Who studies only before exams but still scores?",          emoji: "📖😅",  color: "#f87171" },
+ 
+  { id: 10, text: "Who is most likely to crack placements easily?",           emoji: "🎯🏆",  color: "#fbbf24" },
+  { id: 11, text: "Who is the most confident speaker?",                       emoji: "🎤💬",  color: "#34d399" },
+  { id: 12, text: "Who is always on their phone?",                            emoji: "📱🌙",  color: "#38bdf8" },
+
+  
+
+  { id: 13, text: "Who is the most silent but observes everything?",          emoji: "👀🤫",  color: "#94a3b8" },
+  { id: 14, text: "Who is best at presentations?",                            emoji: "📊🎯",  color: "#60a5fa" },
+ 
+
+  { id: 15, text: "Who pretends like doing nothing but does everything?",     emoji: "👻🤫",  color: "#a78bfa" },
+  { id: 16, text: "Who sleeps in class but still scores well?",               emoji: "😴📈",  color: "#fb923c" },
+
+  { id: 17, text: "Who is the comedian of the class?",                        emoji: "🤡😂",  color: "#fb923c" },
+  { id: 18, text: "Who is the best frontend developer?",                      emoji: "🎨💻",  color: "#c084fc" },
+  { id: 19, text: "Who is the best backend developer?",                       emoji: "⚙️💻",  color: "#2dd4bf" },
+  { id: 20, text: "Who is the best Class Representative?",                   emoji: "🏅👑",  color: "#fbbf24" },
 ];
 
 // Build roll number options
