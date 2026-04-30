@@ -1,42 +1,39 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import Background from "./globalbackground";
 import music from "./assets/music.mp3";
 const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/submit";
 
 const QUESTIONS = [
-  
   { id: 1,  text: "Who is the most beautiful person in the class?",           emoji: "🌟💫",  color: "#f472b6" },
-  
   { id: 2,  text: "Who is the best coder in the class?",                      emoji: "💻⚡",  color: "#2dd4bf" },
-  
   { id: 3,  text: "Who is the most responsible student?",                     emoji: "📌✅",  color: "#60a5fa" },
-  
   { id: 4,  text: "Who is the most stylish person in the class?",             emoji: "😎✨",  color: "#c084fc" },
   { id: 5,  text: "Who is most likely to become a CEO?",                      emoji: "🏢👔",  color: "#fbbf24" },
-  { id: 6, text: "Who is best at logical thinking?",                         emoji: "🧠💡",  color: "#38bdf8" },
-  { id: 7, text: "Who is the class entertainer?",                            emoji: "🎭🎪",  color: "#fb923c" },
-  { id: 8, text: "Who is the most disciplined?",                             emoji: "📚⏱️",  color: "#60a5fa" },
- 
-  { id: 9, text: "Who studies only before exams but still scores?",          emoji: "📖😅",  color: "#f87171" },
- 
+  { id: 6,  text: "Who is best at logical thinking?",                         emoji: "🧠💡",  color: "#38bdf8" },
+  { id: 7,  text: "Who is the class entertainer?",                            emoji: "🎭🎪",  color: "#fb923c" },
+  { id: 8,  text: "Who is the most disciplined?",                             emoji: "📚⏱️",  color: "#60a5fa" },
+  { id: 9,  text: "Who studies only before exams but still scores?",          emoji: "📖😅",  color: "#f87171" },
   { id: 10, text: "Who is most likely to crack placements easily?",           emoji: "🎯🏆",  color: "#fbbf24" },
   { id: 11, text: "Who is the most confident speaker?",                       emoji: "🎤💬",  color: "#34d399" },
   { id: 12, text: "Who is always on their phone?",                            emoji: "📱🌙",  color: "#38bdf8" },
-
-  
-
   { id: 13, text: "Who is the most silent but observes everything?",          emoji: "👀🤫",  color: "#94a3b8" },
   { id: 14, text: "Who is best at presentations?",                            emoji: "📊🎯",  color: "#60a5fa" },
- 
-
   { id: 15, text: "Who pretends like doing nothing but does everything?",     emoji: "👻🤫",  color: "#a78bfa" },
   { id: 16, text: "Who sleeps in class but still scores well?",               emoji: "😴📈",  color: "#fb923c" },
-
   { id: 17, text: "Who is the comedian of the class?",                        emoji: "🤡😂",  color: "#fb923c" },
   { id: 18, text: "Who is the best frontend developer?",                      emoji: "🎨💻",  color: "#c084fc" },
   { id: 19, text: "Who is the best backend developer?",                       emoji: "⚙️💻",  color: "#2dd4bf" },
-  { id: 20, text: "Who is the best Class Representative?",                   emoji: "🏅👑",  color: "#fbbf24" },
+  { id: 20, text: "Who is the best Class Representative?",                    emoji: "🏅👑",  color: "#fbbf24" },
 ];
+
+const getShuffledQuestions = () => {
+  const arr = [...QUESTIONS];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+};
 
 // Build roll number options
 const ROLL_OPTIONS = (() => {
@@ -232,6 +229,9 @@ const CustomKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
 };
 
 export default function Quiz() {
+  // Shuffle questions once per session mount
+  const questions = useMemo(() => getShuffledQuestions(), []);
+
   const [phase, setPhase] = useState("name");
   const [studentName, setStudentName] = useState("");
   const [nameInput, setNameInput] = useState("");
@@ -250,7 +250,7 @@ export default function Quiz() {
   };
   const sessionId = useRef(getSessionId());
 
-  const q = QUESTIONS[currentQ];
+  const q = questions[currentQ];
   const Icon = QUESTION_ICONS[currentQ];
   const accentColor = q?.color || "#c084fc";
 
@@ -260,8 +260,6 @@ export default function Quiz() {
     if (!nameInput.trim()) { setNameError("Please enter your name"); return; }
     setStudentName(nameInput.trim());
     setPhase("quiz");
-
-    // 🎵 START MUSIC HERE
     if (audioRef.current) {
       audioRef.current.volume = 0.4;
       audioRef.current.play().catch(() => {});
@@ -274,7 +272,7 @@ export default function Quiz() {
     const newAnswers = { ...answers, [q.id]: selectedRoll };
     setAnswers(newAnswers);
 
-    if (currentQ < QUESTIONS.length - 1) {
+    if (currentQ < questions.length - 1) {
       setAnimDir("out");
       setTimeout(() => {
         setCurrentQ(c => c + 1);
@@ -282,14 +280,14 @@ export default function Quiz() {
         setAnimDir("in");
       }, 400);
     } else {
-      const allFilled = QUESTIONS.every(q2 => newAnswers[q2.id]?.trim());
+      const allFilled = questions.every(q2 => newAnswers[q2.id]?.trim());
       if (!allFilled) { setError("Something went wrong. Please try again."); return; }
 
       setPhase("submit");
       const payload = {
         sessionId: sessionId.current,
         studentName: studentName.trim(),
-        answers: QUESTIONS.map(q2 => ({
+        answers: questions.map(q2 => ({
           question: q2.text,
           answer: newAnswers[q2.id],
         })),
@@ -358,7 +356,6 @@ export default function Quiz() {
         }
       `}</style>
 
-      {/* 🎵 AUDIO TAG */}
       <audio ref={audioRef} loop>
         <source src={music} type="audio/mpeg" />
       </audio>
@@ -483,7 +480,7 @@ export default function Quiz() {
             }}>
               <div style={{
                 height: "100%",
-                width: `${((currentQ + 1) / QUESTIONS.length) * 100}%`,
+                width: `${((currentQ + 1) / questions.length) * 100}%`,
                 background: `linear-gradient(90deg, ${accentColor}, #e879f9)`,
                 borderRadius: 99, transition: "width 0.5s ease",
                 boxShadow: `0 0 10px ${accentColor}`,
@@ -502,7 +499,7 @@ export default function Quiz() {
                 maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
               }}>👤 {studentName}</span>
               <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 600 }}>
-                {currentQ + 1} / {QUESTIONS.length}
+                {currentQ + 1} / {questions.length}
               </span>
             </div>
 
@@ -613,7 +610,7 @@ export default function Quiz() {
                   transition: "all 0.3s ease",
                   boxShadow: selectedRoll ? `0 8px 32px ${accentColor}44` : "none",
                 }}>
-                {currentQ < QUESTIONS.length - 1 ? "NEXT →" : "SUBMIT ✓"}
+                {currentQ < questions.length - 1 ? "NEXT →" : "SUBMIT ✓"}
               </button>
             </div>
 
