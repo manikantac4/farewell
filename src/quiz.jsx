@@ -1,56 +1,125 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import Background from "./globalbackground";
 
-const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/submit";// 🔗 Replace with your backend URL
-
-const SECTIONS = ["ITA", "ITB", "ITC"];
+const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/submit";
 
 const QUESTIONS = [
-  { id: 1, text: "Who is the most dramatic person in class?", emoji: "🎭✨", color: "#c084fc" },
-
-  { id: 2, text: "Who is the funniest person in class?", emoji: "😂🎭", color: "#fb923c" },
-
-  { id: 3, text: "Who is the friendliest person in class?", emoji: "🤝😊", color: "#a78bfa" },
-
-  { id: 4, text: "Who is the most hyperactive person in class?", emoji: "⚡🤯", color: "#22c55e" },
-
-  { id: 5, text: "Who is always online 24/7?", emoji: "📱🌙", color: "#38bdf8" },
-
-  { id: 6, text: "Who is the late comer in class?", emoji: "⏰😴", color: "#34d399" },
-
-  { id: 7, text: "Who is the most aesthetic person in class?", emoji: "✨📸", color: "#f472b6" },
-
-  { id: 8, text: "Who is the silent killer in class?", emoji: "🔥😈", color: "#f87171" },
-
-  { id: 9, text: "Who is the coder of the class?", emoji: "💻⚡", color: "#2dd4bf" },
-
-  { id: 10, text: "Who will become a CEO in the future?", emoji: "👔🚀", color: "#fbbf24" },
+  { id: 1,  text: "Who is the most active person in the class?",              emoji: "⚡🏃",  color: "#22c55e" },
+  { id: 2,  text: "Who is the most beautiful person in the class?",           emoji: "🌟💫",  color: "#f472b6" },
+  { id: 3,  text: "Who will start their own startup?",                        emoji: "🚀💡",  color: "#fbbf24" },
+  { id: 4,  text: "Who is the best coder in the class?",                      emoji: "💻⚡",  color: "#2dd4bf" },
+  { id: 5,  text: "Who has the best sense of humor?",                         emoji: "😂🎭",  color: "#fb923c" },
+  { id: 6,  text: "Who is the most responsible student?",                     emoji: "📌✅",  color: "#60a5fa" },
+  { id: 7,  text: "Who always comes late but still manages attendance?",      emoji: "⏰😴",  color: "#34d399" },
+  { id: 8,  text: "Who is the most stylish person in the class?",             emoji: "😎✨",  color: "#c084fc" },
+  { id: 9,  text: "Who is most likely to become a CEO?",                      emoji: "🏢👔",  color: "#fbbf24" },
+  { id: 10, text: "Who is best at logical thinking?",                         emoji: "🧠💡",  color: "#38bdf8" },
+  { id: 11, text: "Who is the class entertainer?",                            emoji: "🎭🎪",  color: "#fb923c" },
+  { id: 12, text: "Who is the most disciplined?",                             emoji: "📚⏱️",  color: "#60a5fa" },
+  { id: 13, text: "Who will go abroad for studies?",                          emoji: "✈️🌍",  color: "#a78bfa" },
+  { id: 14, text: "Who studies only before exams but still scores?",          emoji: "📖😅",  color: "#f87171" },
+  { id: 15, text: "Who has the best dressing sense in the class?",            emoji: "👗✨",  color: "#f472b6" },
+  { id: 16, text: "Who is most likely to crack placements easily?",           emoji: "🎯🏆",  color: "#fbbf24" },
+  { id: 17, text: "Who is the most confident speaker?",                       emoji: "🎤💬",  color: "#34d399" },
+  { id: 18, text: "Who is always on their phone?",                            emoji: "📱🌙",  color: "#38bdf8" },
+  { id: 19, text: "Who is the most creative thinker?",                        emoji: "🎨💭",  color: "#c084fc" },
+  { id: 20, text: "Who has the best vibe in the class?",                      emoji: "✨🌈",  color: "#f472b6" },
+  { id: 21, text: "Who will get placed in a top company first?",              emoji: "🏆🚀",  color: "#fbbf24" },
+  { id: 22, text: "Who is the most silent but observes everything?",          emoji: "👀🤫",  color: "#94a3b8" },
+  { id: 23, text: "Who is best at presentations?",                            emoji: "📊🎯",  color: "#60a5fa" },
+  { id: 24, text: "Who is highly talented in class?",                         emoji: "🌈⭐",  color: "#e879f9" },
+  { id: 25, text: "Who is the most punctual student?",                        emoji: "⏱️✅",  color: "#34d399" },
+  { id: 26, text: "Who pretends like doing nothing but does everything?",     emoji: "👻🤫",  color: "#a78bfa" },
+  { id: 27, text: "Who sleeps in class but still scores well?",               emoji: "😴📈",  color: "#fb923c" },
+  { id: 28, text: "Who has aura + infinity?",                                 emoji: "😎✨",  color: "#e879f9" },
+  { id: 29, text: "Who is most likely to become a leader?",                   emoji: "👑🌟",  color: "#fbbf24" },
+  { id: 30, text: "Who is the comedian of the class?",                        emoji: "🤡😂",  color: "#fb923c" },
+  { id: 31, text: "Who is the best frontend developer?",                      emoji: "🎨💻",  color: "#c084fc" },
+  { id: 32, text: "Who is the best backend developer?",                       emoji: "⚙️💻",  color: "#2dd4bf" },
+  { id: 33, text: "Who is the best Class Representative?",                   emoji: "🏅👑",  color: "#fbbf24" },
 ];
 
-// SVG Icons
+// Build roll number options
+const ROLL_OPTIONS = (() => {
+  const opts = [];
+  // Numeric 66–99
+  for (let i = 66; i <= 99; i++) {
+    const suffix = String(i);
+    opts.push({ label: `238W1A1${suffix}`, value: `238W1A1${suffix}`, group: "Numeric (66–99)" });
+  }
+  // A-C series A0–A9, B0–B9, C0–C9
+  ["A","B","C"].forEach(letter => {
+    for (let i = 0; i <= 9; i++) {
+      const suffix = `${letter}${i}`;
+      opts.push({ label: `238W1A1${suffix}`, value: `238W1A1${suffix}`, group: `${letter} Series` });
+    }
+  });
+  // D0
+  opts.push({ label: "238W1A1D0", value: "238W1A1D0", group: "D Series" });
+  // Lateral Entry LE7–LE13
+  for (let i = 7; i <= 13; i++) {
+    opts.push({ label: `248W5A12LE${i}`, value: `248W5A12LE${i}`, group: "Lateral Entry" });
+  }
+  return opts;
+})();
+
+const GROUP_ORDER = ["Numeric (66–99)", "A Series", "B Series", "C Series", "D Series", "Lateral Entry"];
+
+// SVG Icons (same as original)
 const DanceIcon = ({ color }) => (
   <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
     <circle cx="18" cy="8" r="4" fill={color} opacity="0.9"/>
     <path d="M12 14c0 0 2-2 6-2s6 2 6 2l2 8-4 1-2-5-2 5-4-1 2-8z" fill={color} opacity="0.8"/>
     <path d="M10 22l4 8M26 22l-4 8" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="18" cy="8" r="3" fill="none" stroke={color} strokeWidth="1" opacity="0.4"/>
   </svg>
 );
-
 const StarIcon = ({ color }) => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
     <path d="M16 2l3.5 7.5L28 11l-6 5.5 1.5 8.5L16 21l-7.5 4 1.5-8.5L4 11l8.5-1.5L16 2z" fill={color} opacity="0.85"/>
-    <path d="M16 6l2.5 5 5.5 1-4 3.5 1 5.5L16 18l-5 3 1-5.5L8 12l5.5-1L16 6z" fill="white" opacity="0.2"/>
   </svg>
 );
-
-const HeartIcon = ({ color }) => (
+const RocketIcon = ({ color }) => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-    <path d="M16 28s-14-9-14-18a8 8 0 0116 0 8 8 0 0116 0c0 9-14 18-14 18z" fill={color} opacity="0.9"/>
-    <path d="M16 24s-9-6-9-12a5 5 0 0110 0 5 5 0 0110 0c0 6-9 12-9 12z" fill="white" opacity="0.15"/>
+    <path d="M16 2c0 0 8 4 8 14l-4 2-4-2-4 2-4-2C8 6 16 2 16 2z" fill={color} opacity="0.85"/>
+    <path d="M12 18l-4 8 8-4 8 4-4-8" fill={color} opacity="0.5"/>
+    <circle cx="16" cy="12" r="3" fill="white" opacity="0.4"/>
   </svg>
 );
-
+const CodeIcon = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <rect x="2" y="4" width="28" height="24" rx="4" fill={color} opacity="0.2"/>
+    <path d="M10 12l-5 4 5 4M22 12l5 4-5 4" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+    <path d="M13 22l6-12" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+  </svg>
+);
+const LaughIcon = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="14" fill={color} opacity="0.85"/>
+    <path d="M9 18c2 6 12 6 14 0" fill="white" opacity="0.9"/>
+    <circle cx="11" cy="13" r="2.5" fill="white"/>
+    <circle cx="21" cy="13" r="2.5" fill="white"/>
+  </svg>
+);
+const ShieldIcon = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <path d="M16 2l12 5v9c0 8-12 14-12 14S4 24 4 16V7z" fill={color} opacity="0.8"/>
+    <path d="M10 16l4 4 8-8" stroke="white" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+const ClockIcon = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <circle cx="16" cy="16" r="14" fill={color} opacity="0.2"/>
+    <circle cx="16" cy="16" r="14" stroke={color} strokeWidth="2" fill="none"/>
+    <path d="M16 8v8l5 5" stroke={color} strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+const FashionIcon = ({ color }) => (
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+    <path d="M8 4l4 6h8l4-6" stroke={color} strokeWidth="2" fill="none"/>
+    <path d="M6 8l2 4 8 2 8-2 2-4-4-2-2 4-4-1-4 1-2-4z" fill={color} opacity="0.8"/>
+    <rect x="10" y="14" width="12" height="14" rx="2" fill={color} opacity="0.7"/>
+  </svg>
+);
 const CrownIcon = ({ color }) => (
   <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
     <path d="M4 24l4-14 7 8 4-10 4 10 7-8 4 14H4z" fill={color} opacity="0.9"/>
@@ -60,157 +129,23 @@ const CrownIcon = ({ color }) => (
     <circle cx="30" cy="10" r="2.5" fill={color}/>
   </svg>
 );
-
-const SmileIcon = ({ color }) => (
+const BrainIcon = ({ color }) => (
   <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-    <circle cx="16" cy="16" r="14" fill={color} opacity="0.85"/>
-    <circle cx="11" cy="13" r="2" fill="white"/>
-    <circle cx="21" cy="13" r="2" fill="white"/>
-    <path d="M10 19c2 4 10 4 12 0" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+    <path d="M8 20c-3-2-4-6-2-9 1-2 3-3 5-3 0-3 2-5 5-5s5 2 5 5c2 0 4 1 5 3 2 3 1 7-2 9" fill={color} opacity="0.7"/>
+    <path d="M8 20c0 4 3 7 8 7s8-3 8-7" fill={color} opacity="0.5"/>
+    <path d="M12 16c0 2 1.5 4 4 4s4-2 4-4" stroke="white" strokeWidth="1.5" fill="none"/>
   </svg>
 );
 
-const FriendIcon = ({ color }) => (
-  <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
-    <circle cx="12" cy="10" r="5" fill={color} opacity="0.8"/>
-    <circle cx="22" cy="10" r="5" fill={color} opacity="0.6"/>
-    <path d="M2 28c0-6 4-10 10-10h10c6 0 10 4 10 10" fill={color} opacity="0.5"/>
-    <path d="M6 28c0-4 3-8 8-8h8c5 0 8 4 8 8" fill={color} opacity="0.8"/>
-  </svg>
-);
-
-const LaughIcon = ({ color }) => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-    <circle cx="16" cy="16" r="14" fill={color} opacity="0.85"/>
-    <path d="M9 18c2 6 12 6 14 0" fill="white" opacity="0.9"/>
-    <circle cx="11" cy="13" r="2.5" fill="white"/>
-    <circle cx="21" cy="13" r="2.5" fill="white"/>
-    <path d="M11 10l-3-3M21 10l3-3" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-  </svg>
-);
-
-const FashionIcon = ({ color }) => (
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-    <path d="M8 4l4 6h8l4-6" stroke={color} strokeWidth="2" fill="none"/>
-    <path d="M6 8l2 4 8 2 8-2 2-4-4-2-2 4-4-1-4 1-2-4z" fill={color} opacity="0.8"/>
-    <rect x="10" y="14" width="12" height="14" rx="2" fill={color} opacity="0.7"/>
-    <path d="M13 14v14M19 14v14" stroke="white" strokeWidth="1" opacity="0.4"/>
-  </svg>
-);
-
-const FireIcon = ({ color }) => (
-  <svg width="30" height="34" viewBox="0 0 30 34" fill="none">
-    <path d="M15 2c0 0-10 8-10 16a10 10 0 0020 0c0-4-2-8-4-10 0 4-2 6-4 6-2 0-4-2-4-6 0 0 2 2 2 4z" fill={color} opacity="0.9"/>
-    <path d="M15 16c0 0-4 2-4 6a4 4 0 008 0c0-3-2-5-4-6z" fill="white" opacity="0.3"/>
-  </svg>
-);
-
-const TrophyIcon = ({ color }) => (
-  <svg width="32" height="34" viewBox="0 0 32 34" fill="none">
-    <path d="M8 4h16v14a8 8 0 01-16 0V4z" fill={color} opacity="0.85"/>
-    <path d="M4 6H8v8c-3 0-4-2-4-4V6zM28 6h-4v8c3 0 4-2 4-4V6z" fill={color} opacity="0.6"/>
-    <rect x="12" y="22" width="8" height="6" fill={color} opacity="0.7"/>
-    <rect x="8" y="28" width="16" height="4" rx="2" fill={color} opacity="0.8"/>
-  </svg>
-);
-
-const DuoIcon = ({ color }) => (
-  <svg width="36" height="32" viewBox="0 0 36 32" fill="none">
-    <circle cx="12" cy="8" r="5" fill={color} opacity="0.85"/>
-    <circle cx="24" cy="8" r="5" fill={color} opacity="0.85"/>
-    <path d="M2 30c0-6 4-10 10-10h12c6 0 10 4 10 10" fill={color} opacity="0.7"/>
-    <path d="M17 13l1 3-2 2-2-2 1-3z" fill="white" opacity="0.6"/>
-  </svg>
-);
-
-const QUESTION_ICONS = [DanceIcon, HeartIcon, CrownIcon, SmileIcon, FriendIcon, LaughIcon, FashionIcon, FireIcon, TrophyIcon, DuoIcon];
-
-// Custom keyboard component with numbers
-const CustomKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
-  const rows = [
-    ["1","2","3","4","5","6","7","8","9","0"],
-    ["Q","W","E","R","T","Y","U","I","O","P"],
-    ["A","S","D","F","G","H","J","K","L"],
-    ["Z","X","C","V","B","N","M"],
-  ];
-  const btnBase = {
-    borderRadius: 8,
-    border: "none",
-    cursor: "pointer",
-    fontWeight: 700,
-    fontSize: 14,
-    transition: "all 0.12s",
-    fontFamily: "inherit",
-    userSelect: "none",
-    WebkitUserSelect: "none",
-  };
-  const keyStyle = {
-    ...btnBase,
-    background: `rgba(255,255,255,0.08)`,
-    color: "#fff",
-    width: 32,
-    height: 40,
-    margin: 2,
-    backdropFilter: "blur(8px)",
-    boxShadow: `0 0 8px ${accentColor}33`,
-    border: `1px solid ${accentColor}30`,
-  };
-  const specialStyle = {
-    ...btnBase,
-    background: `${accentColor}33`,
-    color: accentColor,
-    height: 40,
-    margin: 2,
-    padding: "0 10px",
-    border: `1px solid ${accentColor}55`,
-    fontSize: 13,
-  };
-
-  return (
-    <div style={{
-      width: "100%",
-      maxWidth: 420,
-      margin: "0 auto",
-      padding: "10px 4px 4px",
-      borderRadius: 16,
-      background: "rgba(0,0,0,0.35)",
-      backdropFilter: "blur(20px)",
-      border: `1px solid ${accentColor}22`,
-    }}>
-      {rows.map((row, i) => (
-        <div key={i} style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
-          {row.map(k => (
-            <button key={k} style={keyStyle}
-              onPointerDown={e => { e.preventDefault(); onKey(k); }}>
-              {k}
-            </button>
-          ))}
-        </div>
-      ))}
-      <div style={{ display: "flex", justifyContent: "center", gap: 4 }}>
-        <button style={{ ...specialStyle, width: 70 }}
-          onPointerDown={e => { e.preventDefault(); onKey(" "); }}>
-          SPACE
-        </button>
-        <button style={{ ...specialStyle, flex: 1, maxWidth: 160, letterSpacing: 1 }}
-          onPointerDown={undefined}
-          onClick={undefined}>
-          {/* space placeholder */}
-        </button>
-        <button style={{ ...specialStyle, minWidth: 60 }}
-          onPointerDown={e => { e.preventDefault(); onDelete(); }}>
-          ⌫
-        </button>
-      </div>
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 4, gap: 4 }}>
-        <button style={{ ...specialStyle, flex: 1, maxWidth: 260, height: 42, fontSize: 15, letterSpacing: 2 }}
-          onPointerDown={e => { e.preventDefault(); onEnter(); }}>
-          NEXT →
-        </button>
-      </div>
-    </div>
-  );
-};
+const QUESTION_ICONS = [
+  DanceIcon, StarIcon, RocketIcon, CodeIcon, LaughIcon,
+  ShieldIcon, ClockIcon, FashionIcon, CrownIcon, BrainIcon,
+  LaughIcon, ShieldIcon, RocketIcon, ClockIcon, FashionIcon,
+  CrownIcon, StarIcon, DanceIcon, BrainIcon, DanceIcon,
+  CrownIcon, BrainIcon, ShieldIcon, StarIcon, ClockIcon,
+  BrainIcon, ClockIcon, StarIcon, CrownIcon, LaughIcon,
+  CodeIcon, CodeIcon, CrownIcon,
+];
 
 // Floating particles
 const Particles = ({ color }) => {
@@ -240,100 +175,146 @@ const Particles = ({ color }) => {
   );
 };
 
+// Custom keyboard
+const CustomKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
+  const rows = [
+    ["1","2","3","4","5","6","7","8","9","0"],
+    ["Q","W","E","R","T","Y","U","I","O","P"],
+    ["A","S","D","F","G","H","J","K","L"],
+    ["Z","X","C","V","B","N","M"],
+  ];
+  const btnBase = {
+    borderRadius: 8, border: "none", cursor: "pointer", fontWeight: 700,
+    fontSize: 14, transition: "all 0.12s", fontFamily: "inherit",
+    userSelect: "none", WebkitUserSelect: "none",
+  };
+  const keyStyle = {
+    ...btnBase,
+    background: `rgba(255,255,255,0.08)`, color: "#fff",
+    width: 32, height: 40, margin: 2,
+    backdropFilter: "blur(8px)",
+    boxShadow: `0 0 8px ${accentColor}33`,
+    border: `1px solid ${accentColor}30`,
+  };
+  const specialStyle = {
+    ...btnBase,
+    background: `${accentColor}33`, color: accentColor,
+    height: 40, margin: 2, padding: "0 10px",
+    border: `1px solid ${accentColor}55`, fontSize: 13,
+  };
+  return (
+    <div style={{
+      width: "100%", maxWidth: 420, margin: "0 auto",
+      padding: "10px 4px 4px", borderRadius: 16,
+      background: "rgba(0,0,0,0.35)", backdropFilter: "blur(20px)",
+      border: `1px solid ${accentColor}22`,
+    }}>
+      {rows.map((row, i) => (
+        <div key={i} style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
+          {row.map(k => (
+            <button key={k} style={keyStyle}
+              onPointerDown={e => { e.preventDefault(); onKey(k); }}>
+              {k}
+            </button>
+          ))}
+        </div>
+      ))}
+      <div style={{ display: "flex", justifyContent: "center", gap: 4 }}>
+        <button style={{ ...specialStyle, width: 70 }}
+          onPointerDown={e => { e.preventDefault(); onKey(" "); }}>
+          SPACE
+        </button>
+        <button style={{ ...specialStyle, minWidth: 60 }}
+          onPointerDown={e => { e.preventDefault(); onDelete(); }}>
+          ⌫
+        </button>
+      </div>
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
+        <button style={{ ...specialStyle, flex: 1, maxWidth: 260, height: 42, fontSize: 15, letterSpacing: 2 }}
+          onPointerDown={e => { e.preventDefault(); onEnter(); }}>
+          NEXT →
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function Quiz() {
-  const [phase, setPhase] = useState("anonymous"); // anonymous | section | quiz | submit | done
-  const [section, setSection] = useState(null);
+  const [phase, setPhase] = useState("name"); // name | quiz | submit | done
+  const [studentName, setStudentName] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [nameError, setNameError] = useState("");
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
-  const [inputVal, setInputVal] = useState("");
-  const [animDir, setAnimDir] = useState("in"); // in | out
-  const [submitting, setSubmitting] = useState(false);
+  const [selectedRoll, setSelectedRoll] = useState("");
+  const [animDir, setAnimDir] = useState("in");
   const [error, setError] = useState("");
+
   const getSessionId = () => {
     let id = localStorage.getItem("sessionId");
-    if (!id) {
-      id = "sess_" + crypto.randomUUID();
-      localStorage.setItem("sessionId", id);
-    }
+    if (!id) { id = "sess_" + crypto.randomUUID(); localStorage.setItem("sessionId", id); }
     return id;
   };
   const sessionId = useRef(getSessionId());
+
   const q = QUESTIONS[currentQ];
   const Icon = QUESTION_ICONS[currentQ];
   const accentColor = q?.color || "#c084fc";
 
-  const handleKey = (k) => setInputVal(v => v + k);
-  const handleDelete = () => setInputVal(v => v.slice(0, -1));
+  const handleNameKey = (k) => setNameInput(v => v + k);
+  const handleNameDelete = () => setNameInput(v => v.slice(0, -1));
+  const handleNameEnter = () => {
+    if (!nameInput.trim()) { setNameError("Please enter your name"); return; }
+    setStudentName(nameInput.trim());
+    setPhase("quiz");
+  };
 
   const goNext = async () => {
-    if (!inputVal.trim()) return;
-    const newAnswers = { ...answers, [q.id]: inputVal.trim() };
+    if (!selectedRoll) { setError("Please select a roll number"); return; }
+    setError("");
+    const newAnswers = { ...answers, [q.id]: selectedRoll };
     setAnswers(newAnswers);
-    
+
     if (currentQ < QUESTIONS.length - 1) {
       setAnimDir("out");
       setTimeout(() => {
         setCurrentQ(c => c + 1);
-        setInputVal("");
+        setSelectedRoll("");
         setAnimDir("in");
       }, 400);
-    }  else {
-  // 🔥 ADD THIS VALIDATION BEFORE SUBMIT
+    } else {
+      const allFilled = QUESTIONS.every(q2 => newAnswers[q2.id]?.trim());
+      if (!allFilled) { setError("Something went wrong. Please try again."); return; }
 
-  const allFilled = QUESTIONS.every(q2 => newAnswers[q2.id]?.trim());
-
-  if (!allFilled) {
-    setError("Fill all answers before submitting");
-    setPhase("quiz");
-    return;
-  }
-
-  // Submit
-  setPhase("submit");
-  setSubmitting(true);
-
-  const payload = {
-    sessionId: sessionId.current,
-    section,
-    answers: QUESTIONS.map(q2 => ({
-      question: q2.text,
-      answer: newAnswers[q2.id],
-    })),
-  };
+      setPhase("submit");
+      const payload = {
+        sessionId: sessionId.current,
+        studentName: studentName.trim(),
+        answers: QUESTIONS.map(q2 => ({
+          question: q2.text,
+          answer: newAnswers[q2.id],
+        })),
+      };
       try {
         const res = await fetch(BACKEND_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-
         const data = await res.json();
-        console.log("Payload:", payload);
-console.log("Response:", data);
-
-        if (!res.ok) {
-          throw new Error(data.message || "Submission failed");
-        }
-
+        if (!res.ok) throw new Error(data.message || "Submission failed");
       } catch (err) {
         console.error(err);
         setError(err.message);
-        setPhase("quiz"); // go back if failed
+        setPhase("quiz");
         return;
       }
-      setSubmitting(false);
       setPhase("done");
     }
   };
 
-  const handleKeyActual = (k) => {
-    if (k === "a" || k === "l") return; // ignore placeholder
-    setInputVal(v => v + k);
-  };
-
   return (
     <>
-
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -367,211 +348,121 @@ console.log("Response:", data);
           from { transform: scale(0.7); opacity: 0; }
           to { transform: scale(1); opacity: 1; }
         }
-        @keyframes sectionHover {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
-        }
         @keyframes confetti {
           0% { transform: translateY(0) rotate(0); opacity: 1; }
           100% { transform: translateY(200px) rotate(720deg); opacity: 0; }
-        }
-        @keyframes inputUnderline {
-          from { width: 0; }
-          to { width: 100%; }
         }
         @keyframes emojiPop {
           0% { transform: scale(0) rotate(-20deg); }
           60% { transform: scale(1.2) rotate(5deg); }
           100% { transform: scale(1) rotate(0); }
         }
-        .section-btn:hover { transform: translateY(-6px) scale(1.04) !important; }
-        .section-btn:active { transform: scale(0.97) !important; }
       `}</style>
 
       <Background />
       <div style={{
-        minHeight: "100vh",
-        width: "100%",
-        background: "transparent",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        fontFamily: "'Sora', sans-serif",
-        position: "relative",
-        overflow: "hidden",
-        padding: "20px 16px",
+        minHeight: "100vh", width: "100%", background: "transparent",
+        display: "flex", flexDirection: "column", alignItems: "center",
+        justifyContent: "center", fontFamily: "'Sora', sans-serif",
+        position: "relative", overflow: "hidden", padding: "20px 16px",
       }}>
 
         {/* Ambient glow */}
         <div style={{
-          position: "fixed",
-          inset: 0,
+          position: "fixed", inset: 0,
           background: `radial-gradient(ellipse at 50% 60%, ${accentColor}15 0%, transparent 70%)`,
-          pointerEvents: "none",
-          transition: "background 0.8s ease",
-          zIndex: 0,
+          pointerEvents: "none", transition: "background 0.8s ease", zIndex: 0,
         }}/>
 
-        {/* === ANONYMOUS ID MESSAGE === */}
-        {phase === "anonymous" && (
+        {/* === NAME ENTRY === */}
+        {phase === "name" && (
           <div style={{
-            animation: "scaleIn 0.5s ease",
-            textAlign: "center",
-            zIndex: 1,
-            width: "100%",
-            maxWidth: 400,
+            animation: "scaleIn 0.5s ease", textAlign: "center",
+            zIndex: 1, width: "100%", maxWidth: 420,
           }}>
             <div style={{
-              fontSize: 52,
-              marginBottom: 12,
-              animation: "iconFloat 3s ease-in-out infinite",
-              display: "inline-block",
-            }}>🔒</div>
+              fontSize: 52, marginBottom: 12,
+              animation: "iconFloat 3s ease-in-out infinite", display: "inline-block",
+            }}>✨</div>
             <h1 style={{
-              fontSize: 26,
-              fontWeight: 800,
+              fontSize: 28, fontWeight: 800,
               background: "linear-gradient(135deg, #e879f9, #c084fc, #60a5fa)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              marginBottom: 12,
-              letterSpacing: -1,
-            }}>Your Vote is Safe</h1>
-            <p style={{
-              color: "rgba(255,255,255,0.7)",
-              fontSize: 15,
-              marginBottom: 16,
-              lineHeight: 1.6,
-            }}>
-              Your anonymous ID has been saved securely.
-            </p>
-            <p style={{
-              color: "rgba(255,255,255,0.5)",
-              fontSize: 14,
-              marginBottom: 32,
-              lineHeight: 1.6,
-            }}>
-              ✓ It will not be revealed<br/>
-              ✓ It will not be shared<br/>
-              ✓ Your privacy is protected
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              marginBottom: 8, letterSpacing: -1,
+            }}>Class Poll</h1>
+            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 32 }}>
+              Enter your name to begin
             </p>
 
-            <button
-              onClick={() => setPhase("section")}
-              style={{
-                background: "linear-gradient(135deg, #e879f9, #c084fc)",
-                border: "none",
-                borderRadius: 18,
-                padding: "14px 40px",
-                color: "#fff",
-                fontSize: 16,
-                fontWeight: 800,
-                cursor: "pointer",
-                letterSpacing: 2,
-                transition: "all 0.3s cubic-bezier(.34,1.56,.64,1)",
-                boxShadow: "0 8px 32px rgba(232, 121, 249, 0.3)",
-                fontFamily: "'Sora', sans-serif",
-              }}
-              onMouseEnter={e => {
-                e.target.style.transform = "translateY(-3px) scale(1.05)";
-              }}
-              onMouseLeave={e => {
-                e.target.style.transform = "translateY(0) scale(1)";
+            {/* Name display */}
+            <div style={{
+              background: "rgba(255,255,255,0.04)",
+              border: `1px solid #c084fc44`,
+              borderRadius: 20, padding: "20px 24px",
+              backdropFilter: "blur(16px)", marginBottom: 16,
+            }}>
+              <div style={{
+                minHeight: 52, padding: "14px 16px",
+                fontSize: 20, fontWeight: 600,
+                color: nameInput ? "#fff" : "rgba(255,255,255,0.3)",
+                letterSpacing: 0.5, fontFamily: "'Sora', sans-serif",
+                textAlign: "left",
               }}>
-              Continue →
+                {nameInput || "Your name…"}
+                <span style={{
+                  display: "inline-block", width: 2, height: 22,
+                  background: "#c084fc", marginLeft: 2, verticalAlign: "middle",
+                  animation: "pulseGlow 1s ease-in-out infinite",
+                  boxShadow: "0 0 8px #c084fc",
+                }}/>
+              </div>
+              <div style={{
+                height: 2,
+                background: "linear-gradient(90deg, transparent, #c084fc, #e879f9, transparent)",
+                borderRadius: 2, backgroundSize: "200% 100%",
+                animation: "shimmer 2s linear infinite",
+              }}/>
+            </div>
+
+            {nameError && (
+              <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>{nameError}</p>
+            )}
+
+            {/* Keyboard for name */}
+            <CustomKeyboard
+              accentColor="#c084fc"
+              onKey={handleNameKey}
+              onDelete={handleNameDelete}
+              onEnter={handleNameEnter}
+            />
+            <button
+              onPointerDown={(e) => { e.preventDefault(); setNameInput(v => v + " "); }}
+              style={{
+                marginTop: 6,
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid #c084fc33",
+                borderRadius: 10, color: "rgba(255,255,255,0.5)",
+                fontSize: 13, fontWeight: 600, padding: "8px 60px",
+                cursor: "pointer", fontFamily: "'Sora', sans-serif",
+              }}>
+              SPACE
             </button>
 
-            {/* Instruction Box */}
+            {/* Instructions */}
             <div style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 16,
-              padding: "16px 20px",
-              marginTop: 28,
-              textAlign: "left",
+              borderRadius: 16, padding: "16px 20px", marginTop: 20, textAlign: "left",
             }}>
               <p style={{
-                color: "rgba(255,255,255,0.4)",
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: 1,
-                textTransform: "uppercase",
-                marginBottom: 8,
+                color: "rgba(255,255,255,0.4)", fontSize: 12,
+                fontWeight: 600, letterSpacing: 1, textTransform: "uppercase", marginBottom: 8,
               }}>Instructions</p>
-              <p style={{
-                color: "rgba(255,255,255,0.7)",
-                fontSize: 14,
-                lineHeight: 1.6,
-              }}>
-                ✓ Type the answer for each question only<br/>
-                ✓ Answer format: Roll No<br/>
-                ✓ Example: 228W1A1___
+              <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 14, lineHeight: 1.6 }}>
+                ✓ Answer every question with a roll number<br/>
+                ✓ Select from the dropdown provided<br/>
+                ✓ Your responses are anonymous
               </p>
-            </div>
-          </div>
-        )}
-
-        {/* === SECTION SELECTION === */}
-        {phase === "section" && (
-          <div style={{
-            animation: "scaleIn 0.5s ease",
-            textAlign: "center",
-            zIndex: 1,
-            width: "100%",
-            maxWidth: 400,
-          }}>
-            <div style={{
-              fontSize: 52,
-              marginBottom: 8,
-              animation: "iconFloat 3s ease-in-out infinite",
-              display: "inline-block",
-            }}>🎓</div>
-            <h1 style={{
-              fontSize: 28,
-              fontWeight: 800,
-              background: "linear-gradient(135deg, #e879f9, #c084fc, #60a5fa)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              marginBottom: 6,
-              letterSpacing: -1,
-            }}>Class Poll </h1>
-            <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 36 }}>
-              Choose your section to begin
-            </p>
-
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {SECTIONS.map((sec, i) => {
-                const colors = ["#c084fc", "#f472b6", "#60a5fa"];
-                const c = colors[i];
-                return (
-                  <button key={sec} className="section-btn"
-                    onClick={() => { setSection(sec); setPhase("quiz"); }}
-                    style={{
-                      background: `linear-gradient(135deg, ${c}22, ${c}11)`,
-                      border: `2px solid ${c}55`,
-                      borderRadius: 18,
-                      padding: "20px 32px",
-                      color: "#fff",
-                      fontSize: 22,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      letterSpacing: 4,
-                      transition: "all 0.3s cubic-bezier(.34,1.56,.64,1)",
-                      backdropFilter: "blur(12px)",
-                      boxShadow: `0 8px 32px ${c}22`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      fontFamily: "'Sora', sans-serif",
-                    }}>
-                    <span style={{ fontSize: 28 }}>
-                      {["🔴", "🔵", "🟢"][i]}
-                    </span>
-                    <span>{sec}</span>
-                    <span style={{ color: c, fontSize: 20 }}>→</span>
-                  </button>
-                );
-              })}
             </div>
           </div>
         )}
@@ -579,53 +470,38 @@ console.log("Response:", data);
         {/* === QUIZ === */}
         {phase === "quiz" && (
           <div style={{
-            width: "100%",
-            maxWidth: 420,
-            zIndex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 0,
+            width: "100%", maxWidth: 420, zIndex: 1,
+            display: "flex", flexDirection: "column", alignItems: "center", gap: 0,
           }}>
             <Particles color={accentColor} />
 
             {/* Progress bar */}
             <div style={{
-              width: "100%",
-              height: 3,
+              width: "100%", height: 3,
               background: "rgba(255,255,255,0.08)",
-              borderRadius: 99,
-              marginBottom: 20,
-              overflow: "hidden",
+              borderRadius: 99, marginBottom: 20, overflow: "hidden",
             }}>
               <div style={{
                 height: "100%",
                 width: `${((currentQ + 1) / QUESTIONS.length) * 100}%`,
                 background: `linear-gradient(90deg, ${accentColor}, #e879f9)`,
-                borderRadius: 99,
-                transition: "width 0.5s ease",
+                borderRadius: 99, transition: "width 0.5s ease",
                 boxShadow: `0 0 10px ${accentColor}`,
               }}/>
             </div>
 
-            {/* Section badge + counter */}
+            {/* Name badge + counter */}
             <div style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "100%",
-              marginBottom: 12,
-              alignItems: "center",
+              display: "flex", justifyContent: "space-between",
+              width: "100%", marginBottom: 12, alignItems: "center",
             }}>
               <span style={{
                 background: `${accentColor}22`,
                 border: `1px solid ${accentColor}44`,
-                color: accentColor,
-                fontSize: 12,
-                fontWeight: 700,
-                padding: "4px 12px",
-                borderRadius: 99,
-                letterSpacing: 2,
-              }}>{section}</span>
+                color: accentColor, fontSize: 12, fontWeight: 700,
+                padding: "4px 12px", borderRadius: 99, letterSpacing: 1,
+                maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              }}>👤 {studentName}</span>
               <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 600 }}>
                 {currentQ + 1} / {QUESTIONS.length}
               </span>
@@ -642,31 +518,20 @@ console.log("Response:", data);
               <div style={{
                 background: "rgba(255,255,255,0.04)",
                 border: `1px solid ${accentColor}33`,
-                borderRadius: 24,
-                padding: "28px 24px 24px",
-                backdropFilter: "blur(16px)",
-                marginBottom: 20,
-                position: "relative",
-                overflow: "hidden",
+                borderRadius: 24, padding: "28px 24px 24px",
+                backdropFilter: "blur(16px)", marginBottom: 16,
+                position: "relative", overflow: "hidden",
               }}>
-                {/* Glow corner */}
                 <div style={{
-                  position: "absolute",
-                  top: -30,
-                  right: -30,
-                  width: 120,
-                  height: 120,
+                  position: "absolute", top: -30, right: -30, width: 120, height: 120,
                   background: `radial-gradient(circle, ${accentColor}30, transparent 70%)`,
                   pointerEvents: "none",
                 }}/>
 
                 {/* Emoji icons */}
                 <div style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  gap: 10,
-                  marginBottom: 18,
-                  animation: "emojiPop 0.5s cubic-bezier(.34,1.56,.64,1)",
+                  display: "flex", justifyContent: "center", gap: 10,
+                  marginBottom: 18, animation: "emojiPop 0.5s cubic-bezier(.34,1.56,.64,1)",
                 }}>
                   {q.emoji.split("").map((e, i) => (
                     <div key={i} style={{
@@ -676,101 +541,88 @@ console.log("Response:", data);
                       display: "inline-block",
                     }}>{e}</div>
                   ))}
-                  <div style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginLeft: 6,
-                    animation: `iconFloat 3.2s ease-in-out infinite`,
-                  }}>
+                  <div style={{ display: "flex", alignItems: "center", marginLeft: 6, animation: "iconFloat 3.2s ease-in-out infinite" }}>
                     <Icon color={accentColor} />
                   </div>
                 </div>
 
                 {/* Question text */}
                 <h2 style={{
-                  fontSize: 20,
-                  fontWeight: 700,
-                  color: "#fff",
-                  textAlign: "center",
-                  lineHeight: 1.4,
-                  marginBottom: 0,
+                  fontSize: 20, fontWeight: 700, color: "#fff",
+                  textAlign: "center", lineHeight: 1.4, marginBottom: 0,
                   textShadow: `0 0 30px ${accentColor}66`,
                 }}>{q.text}</h2>
               </div>
 
-              {/* Input area */}
-              <div style={{
-                width: "100%",
-                padding: "0 4px",
-                marginBottom: 16,
-              }}>
+              {/* Roll number dropdown */}
+              <div style={{ width: "100%", padding: "0 4px", marginBottom: 16 }}>
                 <div style={{
-                  position: "relative",
-                  width: "100%",
+                  background: "rgba(255,255,255,0.04)",
+                  border: `1px solid ${accentColor}44`,
+                  borderRadius: 16, overflow: "hidden",
                 }}>
-                  {/* The displayed text - not an actual input */}
-                  <div style={{
-                    minHeight: 52,
-                    padding: "14px 16px",
-                    fontSize: 20,
-                    fontWeight: 600,
-                    color: inputVal ? "#fff" : "rgba(255,255,255,0.3)",
-                    letterSpacing: 0.5,
-                    fontFamily: "'Sora', sans-serif",
-                    position: "relative",
-                  }}>
-                    {inputVal || "Enter Roll No (e.g. 228W1A1___)"}
-                    {/* Cursor */}
-                    <span style={{
-                      display: "inline-block",
-                      width: 2,
-                      height: 22,
-                      background: accentColor,
-                      marginLeft: 2,
-                      verticalAlign: "middle",
-                      animation: "pulseGlow 1s ease-in-out infinite",
-                      boxShadow: `0 0 8px ${accentColor}`,
-                    }}/>
-                  </div>
-                  {/* Animated underline */}
-                  <div style={{
-                    height: 2,
-                    background: `linear-gradient(90deg, transparent, ${accentColor}, #e879f9, transparent)`,
-                    borderRadius: 2,
-                    backgroundSize: "200% 100%",
-                    animation: "shimmer 2s linear infinite",
-                  }}/>
+                  <select
+                    value={selectedRoll}
+                    onChange={e => setSelectedRoll(e.target.value)}
+                    style={{
+                      width: "100%", padding: "16px 20px",
+                      background: "transparent", color: selectedRoll ? "#fff" : "rgba(255,255,255,0.4)",
+                      fontSize: 17, fontWeight: 600, fontFamily: "'Sora', sans-serif",
+                      border: "none", outline: "none", cursor: "pointer",
+                      appearance: "none", WebkitAppearance: "none",
+                      backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7l5 5 5-5' stroke='${encodeURIComponent(accentColor)}' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "right 16px center",
+                      backgroundSize: "20px",
+                    }}>
+                    <option value="" disabled style={{ background: "#1a1a2e", color: "rgba(255,255,255,0.5)" }}>
+                      Select Roll Number…
+                    </option>
+                    {GROUP_ORDER.map(group => {
+                      const groupOpts = ROLL_OPTIONS.filter(o => o.group === group);
+                      if (!groupOpts.length) return null;
+                      return (
+                        <optgroup key={group} label={group} style={{ background: "#1a1a2e", color: accentColor }}>
+                          {groupOpts.map(opt => (
+                            <option key={opt.value} value={opt.value}
+                              style={{ background: "#1a1a2e", color: "#fff", fontSize: 15 }}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })}
+                  </select>
                 </div>
-              </div>
-            </div>
 
-            {/* Custom Keyboard */}
-            <CustomKeyboard
-              accentColor={accentColor}
-              onKey={(k) => {
-                if (k === "a" || k === "l") return;
-                setInputVal(v => v + k);
-              }}
-              onDelete={handleDelete}
-              onEnter={goNext}
-            />
-            {/* Space bar below keyboard */}
-            <button
-              onPointerDown={(e) => { e.preventDefault(); setInputVal(v => v + " "); }}
-              style={{
-                marginTop: 6,
-                background: `rgba(255,255,255,0.06)`,
-                border: `1px solid ${accentColor}33`,
-                borderRadius: 10,
-                color: "rgba(255,255,255,0.5)",
-                fontSize: 13,
-                fontWeight: 600,
-                padding: "8px 60px",
-                cursor: "pointer",
-                fontFamily: "'Sora', sans-serif",
-              }}>
-              SPACE
-            </button>
+                {/* Animated underline */}
+                <div style={{
+                  height: 2, marginTop: 2,
+                  background: `linear-gradient(90deg, transparent, ${accentColor}, #e879f9, transparent)`,
+                  borderRadius: 2, backgroundSize: "200% 100%",
+                  animation: "shimmer 2s linear infinite",
+                }}/>
+              </div>
+
+              {/* Next button */}
+              <button
+                onClick={goNext}
+                style={{
+                  width: "100%",
+                  background: selectedRoll
+                    ? `linear-gradient(135deg, ${accentColor}, #e879f9)`
+                    : "rgba(255,255,255,0.08)",
+                  border: `1px solid ${selectedRoll ? "transparent" : accentColor + "33"}`,
+                  borderRadius: 16, padding: "16px",
+                  color: selectedRoll ? "#fff" : "rgba(255,255,255,0.4)",
+                  fontSize: 16, fontWeight: 800, cursor: "pointer",
+                  letterSpacing: 2, fontFamily: "'Sora', sans-serif",
+                  transition: "all 0.3s ease",
+                  boxShadow: selectedRoll ? `0 8px 32px ${accentColor}44` : "none",
+                }}>
+                {currentQ < QUESTIONS.length - 1 ? "NEXT →" : "SUBMIT ✓"}
+              </button>
+            </div>
 
             {error && (
               <p style={{ color: "#f87171", fontSize: 13, marginTop: 8 }}>{error}</p>
@@ -780,13 +632,9 @@ console.log("Response:", data);
 
         {/* === SUBMITTING === */}
         {phase === "submit" && (
-          <div style={{
-            textAlign: "center",
-            animation: "scaleIn 0.5s ease",
-            zIndex: 1,
-          }}>
+          <div style={{ textAlign: "center", animation: "scaleIn 0.5s ease", zIndex: 1 }}>
             <div style={{ fontSize: 60, marginBottom: 16, animation: "iconFloat 2s ease-in-out infinite" }}>⏳</div>
-            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>Submitting your votes...</p>
+            <p style={{ color: "rgba(255,255,255,0.6)", fontSize: 16 }}>Submitting your votes…</p>
           </div>
         )}
 
@@ -795,78 +643,51 @@ console.log("Response:", data);
           <div style={{
             textAlign: "center",
             animation: "scaleIn 0.6s cubic-bezier(.34,1.56,.64,1)",
-            zIndex: 1,
-            maxWidth: 360,
-            padding: "0 20px",
+            zIndex: 1, maxWidth: 360, padding: "0 20px",
           }}>
-            {/* Confetti dots */}
             {Array.from({ length: 16 }).map((_, i) => (
               <div key={i} style={{
-                position: "fixed",
-                top: "30%",
-                left: `${10 + i * 5.5}%`,
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
+                position: "fixed", top: "30%", left: `${10 + i * 5.5}%`,
+                width: 8, height: 8, borderRadius: "50%",
                 background: ["#e879f9","#60a5fa","#fbbf24","#34d399","#f472b6"][i % 5],
                 animation: `confetti ${1.5 + Math.random()}s ${Math.random() * 0.5}s ease-out forwards`,
-                pointerEvents: "none",
-                zIndex: 999,
+                pointerEvents: "none", zIndex: 999,
               }}/>
             ))}
 
             <div style={{
-              fontSize: 72,
-              marginBottom: 16,
+              fontSize: 72, marginBottom: 16,
               animation: "iconFloat 2.5s ease-in-out infinite",
               filter: "drop-shadow(0 0 30px #e879f9)",
             }}>🎉</div>
 
             <h2 style={{
-              fontSize: 28,
-              fontWeight: 800,
+              fontSize: 28, fontWeight: 800,
               background: "linear-gradient(135deg, #e879f9, #c084fc, #fbbf24)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              marginBottom: 12,
-              letterSpacing: -0.5,
+              WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
+              marginBottom: 12, letterSpacing: -0.5,
             }}>Votes Submitted!</h2>
 
             <p style={{
               color: "rgba(255,255,255,0.65)",
-              fontSize: 16,
-              lineHeight: 1.7,
-              marginBottom: 24,
+              fontSize: 16, lineHeight: 1.7, marginBottom: 24,
             }}>
-              Thank you for voting, <strong style={{ color: "#fff" }}>{section}</strong>! 🌟<br/>
-              Stay tuned for the exciting results!
+              Thank you for participating, <strong style={{ color: "#fff" }}>{studentName}</strong>! 🌟
             </p>
 
             <div style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
-              borderRadius: 20,
-              padding: "20px 24px",
+              borderRadius: 20, padding: "24px",
               backdropFilter: "blur(12px)",
             }}>
-              <div style={{ fontSize: 36, marginBottom: 8 }}></div>
+              <div style={{ fontSize: 40, marginBottom: 10 }}>✨</div>
               <p style={{
-                color: "rgba(255,255,255,0.4)",
-                fontSize: 13,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                marginBottom: 4,
-              }}>Results Announce On</p>
-              <p style={{
-                fontSize: 26,
-                fontWeight: 800,
-                background: "linear-gradient(90deg, #fbbf24, #f472b6)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                letterSpacing: 1,
-              }}>April 24, 2026</p>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginTop: 6 }}>
-                Wait for the surprise! ✨
+                color: "rgba(255,255,255,0.6)",
+                fontSize: 15, lineHeight: 1.7,
+              }}>
+                Your responses have been recorded.<br/>
+                Stay tuned for the exciting results!
               </p>
             </div>
           </div>
