@@ -42,21 +42,17 @@ const QUESTIONS = [
 // Build roll number options
 const ROLL_OPTIONS = (() => {
   const opts = [];
-  // Numeric 66–99
   for (let i = 66; i <= 99; i++) {
     const suffix = String(i);
     opts.push({ label: `238W1A1${suffix}`, value: `238W1A1${suffix}`, group: "Numeric (66–99)" });
   }
-  // A-C series A0–A9, B0–B9, C0–C9
   ["A","B","C"].forEach(letter => {
     for (let i = 0; i <= 9; i++) {
       const suffix = `${letter}${i}`;
       opts.push({ label: `238W1A1${suffix}`, value: `238W1A1${suffix}`, group: `${letter} Series` });
     }
   });
-  // D0
   opts.push({ label: "238W1A1D0", value: "238W1A1D0", group: "D Series" });
-  // Lateral Entry LE7–LE13
   for (let i = 7; i <= 13; i++) {
     opts.push({ label: `248W5A12LE${i}`, value: `248W5A12LE${i}`, group: "Lateral Entry" });
   }
@@ -65,7 +61,6 @@ const ROLL_OPTIONS = (() => {
 
 const GROUP_ORDER = ["Numeric (66–99)", "A Series", "B Series", "C Series", "D Series", "Lateral Entry"];
 
-// SVG Icons (same as original)
 const DanceIcon = ({ color }) => (
   <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
     <circle cx="18" cy="8" r="4" fill={color} opacity="0.9"/>
@@ -147,7 +142,6 @@ const QUESTION_ICONS = [
   CodeIcon, CodeIcon, CrownIcon,
 ];
 
-// Floating particles
 const Particles = ({ color }) => {
   const particles = Array.from({ length: 12 }, (_, i) => ({
     id: i,
@@ -175,7 +169,6 @@ const Particles = ({ color }) => {
   );
 };
 
-// Custom keyboard
 const CustomKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
   const rows = [
     ["1","2","3","4","5","6","7","8","9","0"],
@@ -240,7 +233,7 @@ const CustomKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
 };
 
 export default function Quiz() {
-  const [phase, setPhase] = useState("name"); // name | quiz | submit | done
+  const [phase, setPhase] = useState("name");
   const [studentName, setStudentName] = useState("");
   const [nameInput, setNameInput] = useState("");
   const [nameError, setNameError] = useState("");
@@ -249,6 +242,7 @@ export default function Quiz() {
   const [selectedRoll, setSelectedRoll] = useState("");
   const [animDir, setAnimDir] = useState("in");
   const [error, setError] = useState("");
+  const audioRef = useRef(null);
 
   const getSessionId = () => {
     let id = localStorage.getItem("sessionId");
@@ -267,6 +261,12 @@ export default function Quiz() {
     if (!nameInput.trim()) { setNameError("Please enter your name"); return; }
     setStudentName(nameInput.trim());
     setPhase("quiz");
+
+    // 🎵 START MUSIC HERE
+    if (audioRef.current) {
+      audioRef.current.volume = 0.4;
+      audioRef.current.play().catch(() => {});
+    }
   };
 
   const goNext = async () => {
@@ -359,6 +359,11 @@ export default function Quiz() {
         }
       `}</style>
 
+      {/* 🎵 AUDIO TAG */}
+      <audio ref={audioRef} loop>
+        <source src="/music.mp3" type="audio/mpeg" />
+      </audio>
+
       <Background />
       <div style={{
         minHeight: "100vh", width: "100%", background: "transparent",
@@ -394,7 +399,6 @@ export default function Quiz() {
               Enter your name to begin
             </p>
 
-            {/* Name display */}
             <div style={{
               background: "rgba(255,255,255,0.04)",
               border: `1px solid #c084fc44`,
@@ -428,7 +432,6 @@ export default function Quiz() {
               <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>{nameError}</p>
             )}
 
-            {/* Keyboard for name */}
             <CustomKeyboard
               accentColor="#c084fc"
               onKey={handleNameKey}
@@ -448,7 +451,6 @@ export default function Quiz() {
               SPACE
             </button>
 
-            {/* Instructions */}
             <div style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
@@ -475,7 +477,6 @@ export default function Quiz() {
           }}>
             <Particles color={accentColor} />
 
-            {/* Progress bar */}
             <div style={{
               width: "100%", height: 3,
               background: "rgba(255,255,255,0.08)",
@@ -490,7 +491,6 @@ export default function Quiz() {
               }}/>
             </div>
 
-            {/* Name badge + counter */}
             <div style={{
               display: "flex", justifyContent: "space-between",
               width: "100%", marginBottom: 12, alignItems: "center",
@@ -507,7 +507,6 @@ export default function Quiz() {
               </span>
             </div>
 
-            {/* Question Card */}
             <div key={currentQ} style={{
               width: "100%",
               animation: animDir === "in"
@@ -528,7 +527,6 @@ export default function Quiz() {
                   pointerEvents: "none",
                 }}/>
 
-                {/* Emoji icons */}
                 <div style={{
                   display: "flex", justifyContent: "center", gap: 10,
                   marginBottom: 18, animation: "emojiPop 0.5s cubic-bezier(.34,1.56,.64,1)",
@@ -546,7 +544,6 @@ export default function Quiz() {
                   </div>
                 </div>
 
-                {/* Question text */}
                 <h2 style={{
                   fontSize: 20, fontWeight: 700, color: "#fff",
                   textAlign: "center", lineHeight: 1.4, marginBottom: 0,
@@ -554,7 +551,6 @@ export default function Quiz() {
                 }}>{q.text}</h2>
               </div>
 
-              {/* Roll number dropdown */}
               <div style={{ width: "100%", padding: "0 4px", marginBottom: 16 }}>
                 <div style={{
                   background: "rgba(255,255,255,0.04)",
@@ -595,7 +591,6 @@ export default function Quiz() {
                   </select>
                 </div>
 
-                {/* Animated underline */}
                 <div style={{
                   height: 2, marginTop: 2,
                   background: `linear-gradient(90deg, transparent, ${accentColor}, #e879f9, transparent)`,
@@ -604,7 +599,6 @@ export default function Quiz() {
                 }}/>
               </div>
 
-              {/* Next button */}
               <button
                 onClick={goNext}
                 style={{
