@@ -44,15 +44,15 @@ const ROLL_OPTIONS = (() => {
   const opts = [];
   for (let i = 66; i <= 99; i++) {
     const suffix = String(i);
-    opts.push({ label: `238W1A1${suffix}`, value: `238W1A1${suffix}`, group: "Numeric (66–99)" });
+    opts.push({ label: `238W1A12${suffix}`, value: `238W1A12${suffix}`, group: "Numeric (66–99)" });
   }
   ["A","B","C"].forEach(letter => {
     for (let i = 0; i <= 9; i++) {
       const suffix = `${letter}${i}`;
-      opts.push({ label: `238W1A1${suffix}`, value: `238W1A1${suffix}`, group: `${letter} Series` });
+      opts.push({ label: `238W1A12${suffix}`, value: `238W1A12${suffix}`, group: `${letter} Series` });
     }
   });
-  opts.push({ label: "238W1A1D0", value: "238W1A1D0", group: "D Series" });
+  opts.push({ label: "238W1A12D0", value: "238W1A12D0", group: "D Series" });
   for (let i = 7; i <= 13; i++) {
     opts.push({ label: `248W5A12LE${i}`, value: `248W5A12LE${i}`, group: "Lateral Entry" });
   }
