@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import Background from "./globalbackground";
-
+import music from "./assets/music.mp3";
 const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/submit";
 
 const QUESTIONS = [
@@ -361,7 +361,7 @@ export default function Quiz() {
 
       {/* 🎵 AUDIO TAG */}
       <audio ref={audioRef} loop>
-        <source src="/music.mp3" type="audio/mpeg" />
+        <source src={music} type="audio/mpeg" />
       </audio>
 
       <Background />
