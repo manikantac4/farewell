@@ -14,18 +14,11 @@ function tallyVotes(data) {
   return tally;
 }
 
-function getPersonalResults(data, roll) {
-  if (!data || !roll) return {};
-  const res = {};
-  data.forEach(entry => {
-    entry.answers.forEach(({ question, answer }) => {
-      if (answer === roll) {
-        if (!res[question]) res[question] = [];
-        res[question].push(entry.studentName || "Anonymous");
-      }
-    });
-  });
-  return res;
+// Returns the answers that THIS roll number submitted
+function getMyVotes(data, roll) {
+  if (!data || !roll) return null;
+  const entry = data.find(e => e.studentName === roll);
+  return entry ? entry.answers : null;
 }
 
 const ROLL_OPTIONS = (() => {
@@ -162,11 +155,9 @@ function QuestionCard({ question, votes, color, idx, highlightRoll }) {
   );
 }
 
-// ── Personal Results — single fixed-height scrollable container ──────────────
+// ── My Votes Container — shows what this roll voted for each question ─────────
 
-function PersonalContainer({ roll, personalResults }) {
-  const wins = Object.entries(personalResults);
-
+function MyVotesContainer({ roll, myVotes }) {
   return (
     <div style={{
       background: "rgba(255,255,255,0.03)",
@@ -174,7 +165,7 @@ function PersonalContainer({ roll, personalResults }) {
       borderRadius: 18, overflow: "hidden",
       animation: "scaleIn 0.4s cubic-bezier(.34,1.4,.64,1) both",
     }}>
-      {/* Sticky header inside container */}
+      {/* Header */}
       <div style={{
         padding: "16px 20px",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -184,85 +175,68 @@ function PersonalContainer({ roll, personalResults }) {
         <div style={{
           width: 40, height: 40, borderRadius: "50%",
           background: "linear-gradient(135deg, #fbbf24, #f472b6)",
-          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17,
-          flexShrink: 0,
-        }}>👤</div>
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 17, flexShrink: 0,
+        }}>🗳️</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" }}>Personal results</p>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" }}>Votes submitted by</p>
           <p style={{
             color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "monospace",
             overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
           }}>{roll}</p>
         </div>
         <div style={{ textAlign: "right", flexShrink: 0 }}>
-          <p style={{ color: "#fbbf24", fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{wins.length}</p>
-          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 9, letterSpacing: 1 }}>categories</p>
+          <p style={{ color: "#fbbf24", fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{myVotes.length}</p>
+          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 9, letterSpacing: 1 }}>answers</p>
         </div>
       </div>
 
-      {/* Scrollable body — fixed height, all entries inside */}
+      {/* Scrollable body */}
       <div style={{
-        height: 420,
+        height: 460,
         overflowY: "auto",
         padding: "14px 16px",
         scrollbarWidth: "thin",
         scrollbarColor: "rgba(255,255,255,0.08) transparent",
       }}>
-        {wins.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 0" }}>
-            <p style={{ fontSize: 32, marginBottom: 10 }}>🫥</p>
-            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 13 }}>No votes received yet</p>
-          </div>
-        ) : (
-          wins.map(([question, voters], i) => {
-            const color = QUESTION_COLORS[i % QUESTION_COLORS.length];
-            return (
-              <div key={question} style={{
-                background: `${color}0d`,
-                border: `1px solid ${color}22`,
-                borderRadius: 12, padding: "12px 14px",
-                marginBottom: 10,
-                animation: `slideUp 0.3s ${i * 0.04}s ease both`,
+        {myVotes.map(({ question, answer }, i) => {
+          const color = QUESTION_COLORS[i % QUESTION_COLORS.length];
+          return (
+            <div key={i} style={{
+              display: "flex", alignItems: "stretch", gap: 0,
+              background: `${color}0c`,
+              border: `1px solid ${color}20`,
+              borderRadius: 12, overflow: "hidden",
+              marginBottom: 8,
+              animation: `slideUp 0.25s ${i * 0.03}s ease both`,
+            }}>
+              {/* Color stripe + number */}
+              <div style={{
+                width: 36, flexShrink: 0,
+                background: `${color}18`,
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                borderRight: `1px solid ${color}20`,
+                gap: 2,
               }}>
-                {/* Question */}
-                <p style={{
-                  color: color, fontSize: 12, fontWeight: 700,
-                  lineHeight: 1.4, marginBottom: 10,
-                }}>{question}</p>
-
-                {/* Voters grid — voter roll on top, label below, 2-col */}
-                <div style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(2, 1fr)",
-                  gap: 6,
-                }}>
-                  {voters.map((voterRoll, vi) => (
-                    <div key={vi} style={{
-                      background: "rgba(255,255,255,0.05)",
-                      border: `1px solid ${color}18`,
-                      borderRadius: 8, padding: "7px 10px",
-                    }}>
-                      <p style={{
-                        color: "#fff", fontSize: 11, fontWeight: 700,
-                        fontFamily: "monospace", letterSpacing: 0.3,
-                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-                      }}>{voterRoll}</p>
-                      <p style={{
-                        color: "rgba(255,255,255,0.28)", fontSize: 9,
-                        marginTop: 2, letterSpacing: 0.5,
-                      }}>voted for you</p>
-                    </div>
-                  ))}
-                </div>
-
-                <p style={{
-                  color: "rgba(255,255,255,0.2)", fontSize: 9,
-                  marginTop: 8, textTransform: "uppercase", letterSpacing: 1,
-                }}>{voters.length} vote{voters.length !== 1 ? "s" : ""}</p>
+                <span style={{ color: color, fontSize: 10, fontWeight: 800, letterSpacing: 0.5 }}>Q</span>
+                <span style={{ color: color, fontSize: 14, fontWeight: 800, lineHeight: 1 }}>{i + 1}</span>
               </div>
-            );
-          })
-        )}
+
+              {/* Question + answer */}
+              <div style={{ flex: 1, padding: "10px 12px" }}>
+                <p style={{
+                  color: "rgba(255,255,255,0.45)", fontSize: 10,
+                  lineHeight: 1.4, marginBottom: 5,
+                }}>{question}</p>
+                <p style={{
+                  color: "#fff", fontSize: 13, fontWeight: 800,
+                  fontFamily: "monospace", letterSpacing: 0.5,
+                }}>{answer}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -275,6 +249,8 @@ export default function ResultsDashboard() {
   const [loading, setLoading] = useState(false);
   const [lookupRoll, setLookupRoll] = useState("");
   const [viewingRoll, setViewingRoll] = useState("");
+  const [myVotes, setMyVotes] = useState(null);
+  const [notFound, setNotFound] = useState(false);
   const personalRef = useRef(null);
 
   const fetchData = async () => {
@@ -294,11 +270,13 @@ export default function ResultsDashboard() {
 
   const tally = tallyVotes(data);
   const questions = Object.keys(tally);
-  const personalResults = getPersonalResults(data, viewingRoll);
 
   const handleLookup = () => {
     if (!lookupRoll) return;
+    const votes = getMyVotes(data, lookupRoll);
     setViewingRoll(lookupRoll);
+    setMyVotes(votes);
+    setNotFound(!votes);
     setTimeout(() => personalRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
 
@@ -348,7 +326,7 @@ export default function ResultsDashboard() {
               background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
               color: "rgba(255,255,255,0.6)", borderRadius: 10, padding: "9px 12px",
               cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
-              fontSize: 12, fontWeight: 600, fontFamily: "'Sora', sans-serif", transition: "all 0.2s",
+              fontSize: 12, fontWeight: 600, fontFamily: "'Sora', sans-serif",
             }}>
               <RefreshIcon/> Refresh
             </button>
@@ -391,18 +369,18 @@ export default function ResultsDashboard() {
           )}
         </div>
 
-        {/* ── Personal Search ── */}
+        {/* ── My Votes Search ── */}
         <div ref={personalRef} style={{ marginTop: 40, animation: "slideUp 0.4s 0.1s ease both" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-            <span style={{ fontSize: 15 }}>🔍</span>
-            <h2 style={{ fontSize: 14, fontWeight: 800, color: "rgba(255,255,255,0.8)", letterSpacing: 0.5 }}>My Votes</h2>
+            <span style={{ fontSize: 15 }}>🗳️</span>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "rgba(255,255,255,0.8)", letterSpacing: 0.5 }}>
+              My Votes
+            </h2>
           </div>
 
-          {/* Dropdown + button */}
           <div style={{ display: "flex", gap: 10, marginBottom: viewingRoll ? 14 : 0 }}>
             <div style={{
-              flex: 1,
-              background: "rgba(255,255,255,0.04)",
+              flex: 1, background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,215,0,0.18)",
               borderRadius: 12, overflow: "hidden",
             }}>
@@ -437,9 +415,23 @@ export default function ResultsDashboard() {
             </button>
           </div>
 
-          {/* Single fixed container — no page scroll, inner scroll only */}
-          {viewingRoll && (
-            <PersonalContainer roll={viewingRoll} personalResults={personalResults} />
+          {/* Result */}
+          {viewingRoll && notFound && (
+            <div style={{
+              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,100,100,0.2)",
+              borderRadius: 16, padding: "36px 20px", textAlign: "center",
+              animation: "scaleIn 0.3s ease both",
+            }}>
+              <p style={{ fontSize: 30, marginBottom: 10 }}>🫥</p>
+              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600 }}>
+                No submission found for
+              </p>
+              <p style={{ color: "#f87171", fontSize: 13, fontFamily: "monospace", marginTop: 4 }}>{viewingRoll}</p>
+            </div>
+          )}
+
+          {viewingRoll && myVotes && (
+            <MyVotesContainer roll={viewingRoll} myVotes={myVotes} />
           )}
         </div>
 
