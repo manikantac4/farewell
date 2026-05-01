@@ -2,7 +2,6 @@ import { useState, useRef, useMemo } from "react";
 import Background from "./globalbackground";
 import music from "./assets/music.mp3";
 const BACKEND_URL = "https://farewell-backend-2v9n.onrender.com/api/submit";
-const RESULTS_URL = "https://farewell-backend-2v9n.onrender.com/api/results";
 
 const QUESTIONS = [
   { id: 1,  text: "Who is the most beautiful person in the class?",           emoji: "🌟💫",  color: "#f472b6" },
@@ -20,7 +19,7 @@ const QUESTIONS = [
   { id: 13, text: "Who is the most silent but observes everything?",          emoji: "👀🤫",  color: "#94a3b8" },
   { id: 14, text: "Who is best at presentations?",                            emoji: "📊🎯",  color: "#60a5fa" },
   { id: 15, text: "Who pretends like doing nothing but does everything?",     emoji: "👻🤫",  color: "#a78bfa" },
-  { id: 16, text: "Who is the most active person in the class?",              emoji: "⚡📈",  color: "#fb923c" },
+  { id: 16, text: "Who is the most active person in the class?",               emoji: "⚡📈",  color: "#fb923c" },
   { id: 17, text: "Who is the comedian of the class?",                        emoji: "🤡😂",  color: "#fb923c" },
   { id: 18, text: "Who is the best frontend developer?",                      emoji: "🎨💻",  color: "#c084fc" },
   { id: 19, text: "Who is the best backend developer?",                       emoji: "⚙️💻",  color: "#2dd4bf" },
@@ -36,6 +35,7 @@ const getShuffledQuestions = () => {
   return arr;
 };
 
+// Build roll number options
 const ROLL_OPTIONS = (() => {
   const opts = [];
   for (let i = 66; i <= 99; i++) {
@@ -57,7 +57,6 @@ const ROLL_OPTIONS = (() => {
 
 const GROUP_ORDER = ["Numeric (66–99)", "A Series", "B Series", "C Series", "D Series", "Lateral Entry"];
 
-// ── Icons ────────────────────────────────────────────────────────────────────
 const DanceIcon = ({ color }) => (
   <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
     <circle cx="18" cy="8" r="4" fill={color} opacity="0.9"/>
@@ -166,285 +165,10 @@ const Particles = ({ color }) => {
   );
 };
 
-// ── VoteLookup Component ────────────────────────────────────────────────────
-function VoteLookup({ onBack }) {
-  const [lookupRoll, setLookupRoll] = useState("");
-  const [lookupLoading, setLookupLoading] = useState(false);
-  const [lookupError, setLookupError] = useState("");
-  const [lookupData, setLookupData] = useState(null); // { roll, votes: [{question, count, voters}] }
-
-  const handleLookup = async () => {
-    if (!lookupRoll) { setLookupError("Please select a roll number"); return; }
-    setLookupError("");
-    setLookupLoading(true);
-    setLookupData(null);
-    try {
-      const res = await fetch(`${RESULTS_URL}/${encodeURIComponent(lookupRoll)}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Failed to fetch results");
-      setLookupData(data);
-    } catch (err) {
-      setLookupError(err.message || "Could not load results. Check backend.");
-    } finally {
-      setLookupLoading(false);
-    }
-  };
-
-  const totalVotes = lookupData?.votes?.reduce((s, v) => s + (v.count || 0), 0) || 0;
-
-  return (
-    <div style={{
-      width: "100%", maxWidth: 480, zIndex: 1,
-      animation: "scaleIn 0.5s cubic-bezier(.34,1.56,.64,1)",
-    }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-        <button onClick={onBack} style={{
-          background: "rgba(255,255,255,0.06)",
-          border: "1px solid rgba(255,255,255,0.12)",
-          borderRadius: 12, padding: "8px 14px",
-          color: "rgba(255,255,255,0.7)", fontSize: 14, cursor: "pointer",
-          fontFamily: "'Sora', sans-serif", fontWeight: 600,
-          transition: "all 0.2s",
-        }}>← Back</button>
-        <div>
-          <h2 style={{
-            fontSize: 22, fontWeight: 800,
-            background: "linear-gradient(135deg, #fbbf24, #f472b6, #c084fc)",
-            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-            letterSpacing: -0.5,
-          }}>Vote Lookup 🔍</h2>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 12, marginTop: 2 }}>
-            See who voted for a roll number & for what
-          </p>
-        </div>
-      </div>
-
-      {/* Selector card */}
-      <div style={{
-        background: "rgba(255,255,255,0.04)",
-        border: "1px solid #fbbf2444",
-        borderRadius: 20, padding: "20px 22px",
-        backdropFilter: "blur(16px)", marginBottom: 12,
-      }}>
-        <p style={{
-          color: "rgba(255,255,255,0.45)", fontSize: 11,
-          fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase",
-          marginBottom: 10, textAlign: "left",
-        }}>Roll Number to Look Up</p>
-
-        <div style={{
-          background: "rgba(255,255,255,0.04)",
-          border: "1px solid #fbbf2444",
-          borderRadius: 14, overflow: "hidden", marginBottom: 10,
-        }}>
-          <select
-            value={lookupRoll}
-            onChange={e => { setLookupRoll(e.target.value); setLookupError(""); setLookupData(null); }}
-            style={{
-              width: "100%", padding: "14px 18px",
-              background: "transparent",
-              color: lookupRoll ? "#fff" : "rgba(255,255,255,0.4)",
-              fontSize: 16, fontWeight: 600, fontFamily: "'Sora', sans-serif",
-              border: "none", outline: "none", cursor: "pointer",
-              appearance: "none", WebkitAppearance: "none",
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7l5 5 5-5' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")`,
-              backgroundRepeat: "no-repeat",
-              backgroundPosition: "right 14px center",
-              backgroundSize: "20px",
-            }}>
-            <option value="" disabled style={{ background: "#1a1a2e", color: "rgba(255,255,255,0.5)" }}>
-              Select roll number…
-            </option>
-            {GROUP_ORDER.map(group => {
-              const groupOpts = ROLL_OPTIONS.filter(o => o.group === group);
-              if (!groupOpts.length) return null;
-              return (
-                <optgroup key={group} label={group} style={{ background: "#1a1a2e", color: "#fbbf24" }}>
-                  {groupOpts.map(opt => (
-                    <option key={opt.value} value={opt.value}
-                      style={{ background: "#1a1a2e", color: "#fff", fontSize: 15 }}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </optgroup>
-              );
-            })}
-          </select>
-        </div>
-
-        <div style={{
-          height: 2,
-          background: "linear-gradient(90deg, transparent, #fbbf24, #f472b6, transparent)",
-          borderRadius: 2, backgroundSize: "200% 100%",
-          animation: "shimmer 2s linear infinite",
-          marginBottom: 14,
-        }}/>
-
-        <button
-          onClick={handleLookup}
-          disabled={lookupLoading}
-          style={{
-            width: "100%",
-            background: lookupRoll
-              ? "linear-gradient(135deg, #fbbf24, #f472b6)"
-              : "rgba(255,255,255,0.06)",
-            border: `1px solid ${lookupRoll ? "transparent" : "#fbbf2433"}`,
-            borderRadius: 14, padding: "14px",
-            color: lookupRoll ? "#1a1a2e" : "rgba(255,255,255,0.4)",
-            fontSize: 15, fontWeight: 800, cursor: lookupLoading ? "not-allowed" : "pointer",
-            letterSpacing: 1.5, fontFamily: "'Sora', sans-serif",
-            transition: "all 0.3s ease",
-            boxShadow: lookupRoll ? "0 6px 24px #fbbf2444" : "none",
-            opacity: lookupLoading ? 0.7 : 1,
-          }}>
-          {lookupLoading ? "LOADING…" : "SEARCH VOTES 🔍"}
-        </button>
-      </div>
-
-      {lookupError && (
-        <div style={{
-          background: "rgba(248,113,113,0.1)", border: "1px solid #f8717133",
-          borderRadius: 12, padding: "12px 16px", marginBottom: 12,
-          color: "#f87171", fontSize: 13, fontWeight: 600,
-        }}>
-          ⚠️ {lookupError}
-        </div>
-      )}
-
-      {/* Results */}
-      {lookupData && (
-        <div style={{ animation: "slideInUp 0.4s ease" }}>
-          {/* Summary banner */}
-          <div style={{
-            background: "linear-gradient(135deg, rgba(251,191,36,0.12), rgba(244,114,182,0.12))",
-            border: "1px solid #fbbf2433",
-            borderRadius: 18, padding: "18px 22px", marginBottom: 16,
-            display: "flex", alignItems: "center", justifyContent: "space-between",
-          }}>
-            <div>
-              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 11, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase" }}>
-                Results for
-              </p>
-              <p style={{ color: "#fff", fontSize: 18, fontWeight: 800, marginTop: 2 }}>{lookupData.roll}</p>
-            </div>
-            <div style={{ textAlign: "right" }}>
-              <p style={{
-                fontSize: 32, fontWeight: 900,
-                background: "linear-gradient(135deg, #fbbf24, #f472b6)",
-                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-              }}>{totalVotes}</p>
-              <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 11, fontWeight: 600 }}>total votes</p>
-            </div>
-          </div>
-
-          {/* No votes case */}
-          {(!lookupData.votes || lookupData.votes.length === 0) && (
-            <div style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid rgba(255,255,255,0.08)",
-              borderRadius: 16, padding: "32px 24px", textAlign: "center",
-            }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>🤷</div>
-              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 15 }}>
-                No votes recorded for this roll number yet.
-              </p>
-            </div>
-          )}
-
-          {/* Vote cards */}
-          {lookupData.votes && lookupData.votes.map((v, idx) => {
-            const qDef = QUESTIONS.find(q => q.text === v.question) || {};
-            const accentColor = qDef.color || "#c084fc";
-            return (
-              <div key={idx} style={{
-                background: "rgba(255,255,255,0.03)",
-                border: `1px solid ${accentColor}33`,
-                borderRadius: 18, padding: "18px 20px",
-                marginBottom: 12,
-                animation: `slideInUp 0.4s ${idx * 0.06}s both ease`,
-              }}>
-                {/* Question + count */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                  <div style={{ flex: 1, paddingRight: 12 }}>
-                    <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>
-                      {qDef.emoji || "🏆"}
-                    </p>
-                    <p style={{ color: "#fff", fontSize: 14, fontWeight: 600, lineHeight: 1.4 }}>{v.question}</p>
-                  </div>
-                  <div style={{
-                    background: `${accentColor}22`,
-                    border: `1px solid ${accentColor}55`,
-                    borderRadius: 12, padding: "6px 14px",
-                    minWidth: 52, textAlign: "center", flexShrink: 0,
-                  }}>
-                    <p style={{ color: accentColor, fontSize: 22, fontWeight: 900, lineHeight: 1 }}>{v.count}</p>
-                    <p style={{ color: `${accentColor}99`, fontSize: 9, fontWeight: 700, letterSpacing: 0.5 }}>
-                      {v.count === 1 ? "vote" : "votes"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Vote progress bar */}
-                <div style={{
-                  height: 3, background: "rgba(255,255,255,0.06)",
-                  borderRadius: 99, marginBottom: 10, overflow: "hidden",
-                }}>
-                  <div style={{
-                    height: "100%",
-                    width: `${Math.min(100, (v.count / Math.max(totalVotes, 1)) * 100 * 3)}%`,
-                    background: `linear-gradient(90deg, ${accentColor}, #e879f9)`,
-                    borderRadius: 99,
-                    transition: "width 0.8s ease",
-                    boxShadow: `0 0 8px ${accentColor}`,
-                  }}/>
-                </div>
-
-                {/* Voters list */}
-                {v.voters && v.voters.length > 0 && (
-                  <div>
-                    <p style={{
-                      color: "rgba(255,255,255,0.35)", fontSize: 10,
-                      fontWeight: 700, letterSpacing: 1, textTransform: "uppercase",
-                      marginBottom: 8,
-                    }}>Voted by</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {v.voters.map((voter, vi) => (
-                        <span key={vi} style={{
-                          background: `${accentColor}18`,
-                          border: `1px solid ${accentColor}33`,
-                          borderRadius: 8, padding: "4px 10px",
-                          color: accentColor, fontSize: 11, fontWeight: 700,
-                          fontFamily: "'Sora', sans-serif",
-                          animation: `scaleIn 0.3s ${vi * 0.04}s both ease`,
-                        }}>
-                          {voter}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* No voter info available */}
-                {(!v.voters || v.voters.length === 0) && v.count > 0 && (
-                  <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 11, fontStyle: "italic" }}>
-                    Voter details not available
-                  </p>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Main Quiz Component ──────────────────────────────────────────────────────
 export default function Quiz() {
   const questions = useMemo(() => getShuffledQuestions(), []);
 
-  const [phase, setPhase] = useState("name"); // name | quiz | submit | done | lookup
+  const [phase, setPhase] = useState("name");
   const [studentRoll, setStudentRoll] = useState("");
   const [studentRollError, setStudentRollError] = useState("");
   const [currentQ, setCurrentQ] = useState(0);
@@ -465,8 +189,12 @@ export default function Quiz() {
   const Icon = QUESTION_ICONS[currentQ];
   const accentColor = q?.color || "#c084fc";
 
+  // ── Roll selection for identity ──────────────────────────────────
   const handleRollEnter = () => {
-    if (!studentRoll) { setStudentRollError("Please select your roll number"); return; }
+    if (!studentRoll) {
+      setStudentRollError("Please select your roll number");
+      return;
+    }
     setStudentRollError("");
     setPhase("quiz");
     if (audioRef.current) {
@@ -475,6 +203,7 @@ export default function Quiz() {
     }
   };
 
+  // ── Quiz navigation ───────────────────────────────────────────────
   const goNext = async () => {
     if (!selectedRoll) { setError("Please select a roll number"); return; }
     setError("");
@@ -563,10 +292,6 @@ export default function Quiz() {
           60% { transform: scale(1.2) rotate(5deg); }
           100% { transform: scale(1) rotate(0); }
         }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.6; }
-        }
       `}</style>
 
       <audio ref={audioRef} loop>
@@ -584,20 +309,13 @@ export default function Quiz() {
         {/* Ambient glow */}
         <div style={{
           position: "fixed", inset: 0,
-          background: phase === "lookup"
-            ? "radial-gradient(ellipse at 50% 60%, #fbbf2415 0%, transparent 70%)"
-            : `radial-gradient(ellipse at 50% 60%, ${accentColor}15 0%, transparent 70%)`,
+          background: `radial-gradient(ellipse at 50% 60%, ${accentColor}15 0%, transparent 70%)`,
           pointerEvents: "none", transition: "background 0.8s ease", zIndex: 0,
         }}/>
 
-        {/* ─── PHASE: lookup ──────────────────────────────────── */}
-        {phase === "lookup" && (
-          <div style={{ width: "100%", maxWidth: 480, zIndex: 1, overflowY: "auto", maxHeight: "90vh", paddingBottom: 40 }}>
-            <VoteLookup onBack={() => setPhase("name")} />
-          </div>
-        )}
-
-        {/* ─── PHASE: name ────────────────────────────────────── */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: name  →  now "pick your roll number"
+        ════════════════════════════════════════════════ */}
         {phase === "name" && (
           <div style={{
             animation: "scaleIn 0.5s ease", textAlign: "center",
@@ -622,7 +340,7 @@ export default function Quiz() {
             {/* Roll number selector */}
             <div style={{
               background: "rgba(255,255,255,0.04)",
-              border: "1px solid #c084fc44",
+              border: `1px solid #c084fc44`,
               borderRadius: 20, padding: "20px 24px",
               backdropFilter: "blur(16px)", marginBottom: 8,
             }}>
@@ -634,7 +352,7 @@ export default function Quiz() {
 
               <div style={{
                 background: "rgba(255,255,255,0.04)",
-                border: "1px solid #c084fc44",
+                border: `1px solid #c084fc44`,
                 borderRadius: 14, overflow: "hidden",
               }}>
                 <select
@@ -703,23 +421,6 @@ export default function Quiz() {
               START VOTING →
             </button>
 
-            {/* 🔍 Lookup button */}
-            <button
-              onClick={() => setPhase("lookup")}
-              style={{
-                width: "100%", marginTop: 10,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid #fbbf2433",
-                borderRadius: 16, padding: "14px",
-                color: "#fbbf24",
-                fontSize: 14, fontWeight: 700, cursor: "pointer",
-                letterSpacing: 1, fontFamily: "'Sora', sans-serif",
-                transition: "all 0.3s ease",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              }}>
-              <span>🔍</span> CHECK VOTE RESULTS
-            </button>
-
             <div style={{
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
@@ -738,7 +439,9 @@ export default function Quiz() {
           </div>
         )}
 
-        {/* ─── PHASE: quiz ────────────────────────────────────── */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: quiz
+        ════════════════════════════════════════════════ */}
         {phase === "quiz" && (
           <div style={{
             width: "100%", maxWidth: 420, zIndex: 1,
@@ -897,7 +600,9 @@ export default function Quiz() {
           </div>
         )}
 
-        {/* ─── PHASE: submit ──────────────────────────────────── */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: submit
+        ════════════════════════════════════════════════ */}
         {phase === "submit" && (
           <div style={{ textAlign: "center", animation: "scaleIn 0.5s ease", zIndex: 1 }}>
             <div style={{ fontSize: 60, marginBottom: 16, animation: "iconFloat 2s ease-in-out infinite" }}>⏳</div>
@@ -905,7 +610,9 @@ export default function Quiz() {
           </div>
         )}
 
-        {/* ─── PHASE: done ────────────────────────────────────── */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: done
+        ════════════════════════════════════════════════ */}
         {phase === "done" && (
           <div style={{
             textAlign: "center",
@@ -946,7 +653,7 @@ export default function Quiz() {
               background: "rgba(255,255,255,0.05)",
               border: "1px solid rgba(255,255,255,0.1)",
               borderRadius: 20, padding: "24px",
-              backdropFilter: "blur(12px)", marginBottom: 16,
+              backdropFilter: "blur(12px)",
             }}>
               <div style={{ fontSize: 40, marginBottom: 10 }}>✨</div>
               <p style={{
@@ -957,23 +664,6 @@ export default function Quiz() {
                 Stay tuned for the exciting results!
               </p>
             </div>
-
-            {/* Lookup button from done screen */}
-            <button
-              onClick={() => setPhase("lookup")}
-              style={{
-                width: "100%",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid #fbbf2433",
-                borderRadius: 16, padding: "14px",
-                color: "#fbbf24",
-                fontSize: 14, fontWeight: 700, cursor: "pointer",
-                letterSpacing: 1, fontFamily: "'Sora', sans-serif",
-                transition: "all 0.3s ease",
-                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-              }}>
-              <span>🔍</span> CHECK VOTE RESULTS
-            </button>
           </div>
         )}
 
