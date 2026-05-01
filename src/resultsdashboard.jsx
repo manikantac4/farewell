@@ -21,6 +21,21 @@ function getMyVotes(data, roll) {
   return entry ? entry.answers : null;
 }
 
+// Returns votes received by a roll number: { question: [voter1, voter2, ...] }
+function getVotesReceived(data, roll) {
+  if (!data || !roll) return null;
+  const result = {};
+  data.forEach(entry => {
+    entry.answers.forEach(({ question, answer }) => {
+      if (answer === roll) {
+        if (!result[question]) result[question] = [];
+        result[question].push(entry.studentName);
+      }
+    });
+  });
+  return Object.keys(result).length > 0 ? result : null;
+}
+
 const ROLL_OPTIONS = (() => {
   const opts = [];
   for (let i = 66; i <= 99; i++) opts.push(`238W1A12${i}`);
@@ -165,7 +180,6 @@ function MyVotesContainer({ roll, myVotes }) {
       borderRadius: 18, overflow: "hidden",
       animation: "scaleIn 0.4s cubic-bezier(.34,1.4,.64,1) both",
     }}>
-      {/* Header */}
       <div style={{
         padding: "16px 20px",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
@@ -191,48 +205,136 @@ function MyVotesContainer({ roll, myVotes }) {
         </div>
       </div>
 
-      {/* Scrollable body */}
       <div style={{
-        height: 460,
-        overflowY: "auto",
-        padding: "14px 16px",
-        scrollbarWidth: "thin",
-        scrollbarColor: "rgba(255,255,255,0.08) transparent",
+        height: 460, overflowY: "auto", padding: "14px 16px",
+        scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent",
       }}>
         {myVotes.map(({ question, answer }, i) => {
           const color = QUESTION_COLORS[i % QUESTION_COLORS.length];
           return (
             <div key={i} style={{
               display: "flex", alignItems: "stretch", gap: 0,
-              background: `${color}0c`,
-              border: `1px solid ${color}20`,
-              borderRadius: 12, overflow: "hidden",
-              marginBottom: 8,
+              background: `${color}0c`, border: `1px solid ${color}20`,
+              borderRadius: 12, overflow: "hidden", marginBottom: 8,
               animation: `slideUp 0.25s ${i * 0.03}s ease both`,
             }}>
-              {/* Color stripe + number */}
               <div style={{
-                width: 36, flexShrink: 0,
-                background: `${color}18`,
+                width: 36, flexShrink: 0, background: `${color}18`,
                 display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
-                borderRight: `1px solid ${color}20`,
-                gap: 2,
+                borderRight: `1px solid ${color}20`, gap: 2,
               }}>
                 <span style={{ color: color, fontSize: 10, fontWeight: 800, letterSpacing: 0.5 }}>Q</span>
                 <span style={{ color: color, fontSize: 14, fontWeight: 800, lineHeight: 1 }}>{i + 1}</span>
               </div>
-
-              {/* Question + answer */}
               <div style={{ flex: 1, padding: "10px 12px" }}>
-                <p style={{
-                  color: "rgba(255,255,255,0.45)", fontSize: 10,
-                  lineHeight: 1.4, marginBottom: 5,
-                }}>{question}</p>
-                <p style={{
-                  color: "#fff", fontSize: 13, fontWeight: 800,
-                  fontFamily: "monospace", letterSpacing: 0.5,
-                }}>{answer}</p>
+                <p style={{ color: "rgba(255,255,255,0.45)", fontSize: 10, lineHeight: 1.4, marginBottom: 5 }}>{question}</p>
+                <p style={{ color: "#fff", fontSize: 13, fontWeight: 800, fontFamily: "monospace", letterSpacing: 0.5 }}>{answer}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ── Votes Received Container ──────────────────────────────────────────────────
+
+function VotesReceivedContainer({ roll, votesReceived }) {
+  const questions = Object.keys(votesReceived);
+  const totalVotes = questions.reduce((sum, q) => sum + votesReceived[q].length, 0);
+
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.03)",
+      border: "1px solid rgba(52,211,153,0.25)",
+      borderRadius: 18, overflow: "hidden",
+      animation: "scaleIn 0.4s cubic-bezier(.34,1.4,.64,1) both",
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: "16px 20px",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        display: "flex", alignItems: "center", gap: 12,
+        background: "rgba(52,211,153,0.05)",
+      }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: "50%",
+          background: "linear-gradient(135deg, #34d399, #38bdf8)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 17, flexShrink: 0,
+        }}>⭐</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ color: "rgba(255,255,255,0.35)", fontSize: 9, letterSpacing: 2, textTransform: "uppercase" }}>Votes received by</p>
+          <p style={{
+            color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "monospace",
+            overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+          }}>{roll}</p>
+        </div>
+        <div style={{ textAlign: "right", flexShrink: 0 }}>
+          <p style={{ color: "#34d399", fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{totalVotes}</p>
+          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 9, letterSpacing: 1 }}>total votes</p>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div style={{
+        maxHeight: 520, overflowY: "auto", padding: "14px 16px",
+        scrollbarWidth: "thin", scrollbarColor: "rgba(255,255,255,0.08) transparent",
+      }}>
+        {questions.map((question, i) => {
+          const voters = votesReceived[question];
+          const color = QUESTION_COLORS[i % QUESTION_COLORS.length];
+          return (
+            <div key={i} style={{
+              background: `${color}08`,
+              border: `1px solid ${color}20`,
+              borderRadius: 14, overflow: "hidden",
+              marginBottom: 10,
+              animation: `slideUp 0.25s ${i * 0.04}s ease both`,
+            }}>
+              {/* Question header */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: "10px 14px",
+                borderBottom: `1px solid ${color}18`,
+                background: `${color}10`,
+              }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 8,
+                  background: `${color}25`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <span style={{ color: color, fontSize: 11, fontWeight: 800 }}>{i + 1}</span>
+                </div>
+                <p style={{ color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 600, flex: 1, lineHeight: 1.4 }}>{question}</p>
+                <div style={{
+                  background: `${color}20`, border: `1px solid ${color}35`,
+                  borderRadius: 6, padding: "3px 8px", flexShrink: 0,
+                }}>
+                  <span style={{ color: color, fontSize: 12, fontWeight: 800 }}>{voters.length}</span>
+                  <span style={{ color: `${color}77`, fontSize: 9, marginLeft: 3 }}>vote{voters.length !== 1 ? "s" : ""}</span>
+                </div>
+              </div>
+
+              {/* Voters list */}
+              <div style={{ padding: "10px 14px", display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {voters.map((voter, vi) => (
+                  <div key={vi} style={{
+                    display: "flex", alignItems: "center", gap: 5,
+                    background: `${color}12`, border: `1px solid ${color}25`,
+                    borderRadius: 8, padding: "5px 10px",
+                    animation: `slideUp 0.2s ${vi * 0.02}s ease both`,
+                  }}>
+                    <span style={{ fontSize: 10 }}>👤</span>
+                    <span style={{
+                      color: "rgba(255,255,255,0.75)", fontSize: 11,
+                      fontFamily: "monospace", fontWeight: 700,
+                    }}>{voter}</span>
+                  </div>
+                ))}
               </div>
             </div>
           );
@@ -247,11 +349,20 @@ function MyVotesContainer({ roll, myVotes }) {
 export default function ResultsDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // My Votes state
   const [lookupRoll, setLookupRoll] = useState("");
   const [viewingRoll, setViewingRoll] = useState("");
   const [myVotes, setMyVotes] = useState(null);
   const [notFound, setNotFound] = useState(false);
   const personalRef = useRef(null);
+
+  // Votes Received state
+  const [receivedLookupRoll, setReceivedLookupRoll] = useState("");
+  const [viewingReceivedRoll, setViewingReceivedRoll] = useState("");
+  const [votesReceived, setVotesReceived] = useState(null);
+  const [receivedNotFound, setReceivedNotFound] = useState(false);
+  const receivedRef = useRef(null);
 
   const fetchData = async () => {
     setLoading(true);
@@ -278,6 +389,15 @@ export default function ResultsDashboard() {
     setMyVotes(votes);
     setNotFound(!votes);
     setTimeout(() => personalRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
+  };
+
+  const handleReceivedLookup = () => {
+    if (!receivedLookupRoll) return;
+    const received = getVotesReceived(data, receivedLookupRoll);
+    setViewingReceivedRoll(receivedLookupRoll);
+    setVotesReceived(received);
+    setReceivedNotFound(!received);
+    setTimeout(() => receivedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 80);
   };
 
   return (
@@ -415,7 +535,6 @@ export default function ResultsDashboard() {
             </button>
           </div>
 
-          {/* Result */}
           {viewingRoll && notFound && (
             <div style={{
               background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,100,100,0.2)",
@@ -432,6 +551,86 @@ export default function ResultsDashboard() {
 
           {viewingRoll && myVotes && (
             <MyVotesContainer roll={viewingRoll} myVotes={myVotes} />
+          )}
+        </div>
+
+        {/* ── Votes Received Search ── */}
+        <div ref={receivedRef} style={{ marginTop: 40, animation: "slideUp 0.4s 0.15s ease both" }}>
+          {/* Divider */}
+          <div style={{
+            height: 1,
+            background: "linear-gradient(90deg, transparent, rgba(52,211,153,0.2), transparent)",
+            marginBottom: 32,
+          }}/>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <span style={{ fontSize: 15 }}>⭐</span>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "rgba(255,255,255,0.8)", letterSpacing: 0.5 }}>
+              Votes Received
+            </h2>
+          </div>
+          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12, marginBottom: 14, paddingLeft: 2 }}>
+            See which questions someone was nominated for & who voted for them
+          </p>
+
+          <div style={{ display: "flex", gap: 10, marginBottom: viewingReceivedRoll ? 14 : 0 }}>
+            <div style={{
+              flex: 1, background: "rgba(255,255,255,0.04)",
+              border: "1px solid rgba(52,211,153,0.2)",
+              borderRadius: 12, overflow: "hidden",
+            }}>
+              <select
+                value={receivedLookupRoll}
+                onChange={e => setReceivedLookupRoll(e.target.value)}
+                style={{
+                  width: "100%", padding: "12px 14px",
+                  background: "transparent",
+                  color: receivedLookupRoll ? "#fff" : "rgba(255,255,255,0.3)",
+                  fontSize: 14, fontWeight: 600, fontFamily: "'Sora', sans-serif",
+                  border: "none", outline: "none", cursor: "pointer",
+                  appearance: "none", WebkitAppearance: "none",
+                }}>
+                <option value="" disabled>Select a roll number…</option>
+                {ROLL_OPTIONS.map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+            <button
+              onClick={handleReceivedLookup}
+              disabled={!receivedLookupRoll}
+              style={{
+                padding: "12px 20px", borderRadius: 12, border: "none",
+                background: receivedLookupRoll
+                  ? "linear-gradient(135deg, #34d399, #38bdf8)"
+                  : "rgba(255,255,255,0.05)",
+                color: receivedLookupRoll ? "#000" : "rgba(255,255,255,0.2)",
+                fontWeight: 800, fontSize: 14,
+                cursor: receivedLookupRoll ? "pointer" : "not-allowed",
+                fontFamily: "'Sora', sans-serif", transition: "all 0.25s", whiteSpace: "nowrap",
+              }}>
+              View →
+            </button>
+          </div>
+
+          {/* Not found */}
+          {viewingReceivedRoll && receivedNotFound && (
+            <div style={{
+              background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,100,100,0.2)",
+              borderRadius: 16, padding: "36px 20px", textAlign: "center",
+              animation: "scaleIn 0.3s ease both",
+            }}>
+              <p style={{ fontSize: 30, marginBottom: 10 }}>🫥</p>
+              <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, fontWeight: 600 }}>
+                No votes received by
+              </p>
+              <p style={{ color: "#f87171", fontSize: 13, fontFamily: "monospace", marginTop: 4 }}>{viewingReceivedRoll}</p>
+            </div>
+          )}
+
+          {/* Votes received result */}
+          {viewingReceivedRoll && votesReceived && (
+            <VotesReceivedContainer roll={viewingReceivedRoll} votesReceived={votesReceived} />
           )}
         </div>
 
