@@ -11,7 +11,7 @@ function App() {
         <Route path="/" element={<Intro />} />
         <Route path="/background" element={<Background />} />
         <Route path="/quiz" element={<Quiz />} />
-        <Route path="/results" element={<ResultsDashboard />} />
+        <Route path="/r23eg5" element={<ResultsDashboard />} />
         <Route path="/final" element={<Final />} />
       </Routes>
     </Router>
