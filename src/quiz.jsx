@@ -12,14 +12,14 @@ const QUESTIONS = [
   { id: 6,  text: "Who is best at logical thinking?",                         emoji: "🧠💡",  color: "#38bdf8" },
   { id: 7,  text: "Who is the class entertainer?",                            emoji: "🎭🎪",  color: "#fb923c" },
   { id: 8,  text: "Who is the most disciplined?",                             emoji: "📚⏱️",  color: "#60a5fa" },
-  { id: 9,  text: "Who studies only before exams but still scores?",          emoji: "📖😅",  color: "#f87171" },
+  { id: 9,  text: "Who opens their laptop every time?",                       emoji: "💻😂",  color: "#f87171" },
   { id: 10, text: "Who is most likely to crack placements easily?",           emoji: "🎯🏆",  color: "#fbbf24" },
   { id: 11, text: "Who is the most confident speaker?",                       emoji: "🎤💬",  color: "#34d399" },
   { id: 12, text: "Who is always on their phone?",                            emoji: "📱🌙",  color: "#38bdf8" },
   { id: 13, text: "Who is the most silent but observes everything?",          emoji: "👀🤫",  color: "#94a3b8" },
   { id: 14, text: "Who is best at presentations?",                            emoji: "📊🎯",  color: "#60a5fa" },
   { id: 15, text: "Who pretends like doing nothing but does everything?",     emoji: "👻🤫",  color: "#a78bfa" },
-  { id: 16, text: "Who sleeps in class but still scores well?",               emoji: "😴📈",  color: "#fb923c" },
+  { id: 16, text: "Who is the most active person in the class?",               emoji: "⚡📈",  color: "#fb923c" },
   { id: 17, text: "Who is the comedian of the class?",                        emoji: "🤡😂",  color: "#fb923c" },
   { id: 18, text: "Who is the best frontend developer?",                      emoji: "🎨💻",  color: "#c084fc" },
   { id: 19, text: "Who is the best backend developer?",                       emoji: "⚙️💻",  color: "#2dd4bf" },
@@ -165,77 +165,12 @@ const Particles = ({ color }) => {
   );
 };
 
-const CustomKeyboard = ({ onKey, onDelete, onEnter, accentColor }) => {
-  const rows = [
-    ["1","2","3","4","5","6","7","8","9","0"],
-    ["Q","W","E","R","T","Y","U","I","O","P"],
-    ["A","S","D","F","G","H","J","K","L"],
-    ["Z","X","C","V","B","N","M"],
-  ];
-  const btnBase = {
-    borderRadius: 8, border: "none", cursor: "pointer", fontWeight: 700,
-    fontSize: 14, transition: "all 0.12s", fontFamily: "inherit",
-    userSelect: "none", WebkitUserSelect: "none",
-  };
-  const keyStyle = {
-    ...btnBase,
-    background: `rgba(255,255,255,0.08)`, color: "#fff",
-    width: 32, height: 40, margin: 2,
-    backdropFilter: "blur(8px)",
-    boxShadow: `0 0 8px ${accentColor}33`,
-    border: `1px solid ${accentColor}30`,
-  };
-  const specialStyle = {
-    ...btnBase,
-    background: `${accentColor}33`, color: accentColor,
-    height: 40, margin: 2, padding: "0 10px",
-    border: `1px solid ${accentColor}55`, fontSize: 13,
-  };
-  return (
-    <div style={{
-      width: "100%", maxWidth: 420, margin: "0 auto",
-      padding: "10px 4px 4px", borderRadius: 16,
-      background: "rgba(0,0,0,0.35)", backdropFilter: "blur(20px)",
-      border: `1px solid ${accentColor}22`,
-    }}>
-      {rows.map((row, i) => (
-        <div key={i} style={{ display: "flex", justifyContent: "center", marginBottom: 4 }}>
-          {row.map(k => (
-            <button key={k} style={keyStyle}
-              onPointerDown={e => { e.preventDefault(); onKey(k); }}>
-              {k}
-            </button>
-          ))}
-        </div>
-      ))}
-      <div style={{ display: "flex", justifyContent: "center", gap: 4 }}>
-        <button style={{ ...specialStyle, width: 70 }}
-          onPointerDown={e => { e.preventDefault(); onKey(" "); }}>
-          SPACE
-        </button>
-        <button style={{ ...specialStyle, minWidth: 60 }}
-          onPointerDown={e => { e.preventDefault(); onDelete(); }}>
-          ⌫
-        </button>
-      </div>
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 4 }}>
-        <button style={{ ...specialStyle, flex: 1, maxWidth: 260, height: 42, fontSize: 15, letterSpacing: 2 }}
-          onPointerDown={e => { e.preventDefault(); onEnter(); }}>
-          NEXT →
-        </button>
-      </div>
-    </div>
-  );
-};
-
 export default function Quiz() {
-  // Shuffle questions once per session mount
   const questions = useMemo(() => getShuffledQuestions(), []);
 
   const [phase, setPhase] = useState("name");
-  const [studentName, setStudentName] = useState("");
-  const [nameInput, setNameInput] = useState("");
-  const [nameError, setNameError] = useState("");
+  const [studentRoll, setStudentRoll] = useState("");
+  const [studentRollError, setStudentRollError] = useState("");
   const [currentQ, setCurrentQ] = useState(0);
   const [answers, setAnswers] = useState({});
   const [selectedRoll, setSelectedRoll] = useState("");
@@ -254,11 +189,13 @@ export default function Quiz() {
   const Icon = QUESTION_ICONS[currentQ];
   const accentColor = q?.color || "#c084fc";
 
-  const handleNameKey = (k) => setNameInput(v => v + k);
-  const handleNameDelete = () => setNameInput(v => v.slice(0, -1));
-  const handleNameEnter = () => {
-    if (!nameInput.trim()) { setNameError("Please enter your name"); return; }
-    setStudentName(nameInput.trim());
+  // ── Roll selection for identity ──────────────────────────────────
+  const handleRollEnter = () => {
+    if (!studentRoll) {
+      setStudentRollError("Please select your roll number");
+      return;
+    }
+    setStudentRollError("");
     setPhase("quiz");
     if (audioRef.current) {
       audioRef.current.volume = 0.4;
@@ -266,6 +203,7 @@ export default function Quiz() {
     }
   };
 
+  // ── Quiz navigation ───────────────────────────────────────────────
   const goNext = async () => {
     if (!selectedRoll) { setError("Please select a roll number"); return; }
     setError("");
@@ -286,7 +224,7 @@ export default function Quiz() {
       setPhase("submit");
       const payload = {
         sessionId: sessionId.current,
-        studentName: studentName.trim(),
+        studentName: studentRoll,
         answers: questions.map(q2 => ({
           question: q2.text,
           answer: newAnswers[q2.id],
@@ -375,7 +313,9 @@ export default function Quiz() {
           pointerEvents: "none", transition: "background 0.8s ease", zIndex: 0,
         }}/>
 
-        {/* === NAME ENTRY === */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: name  →  now "pick your roll number"
+        ════════════════════════════════════════════════ */}
         {phase === "name" && (
           <div style={{
             animation: "scaleIn 0.5s ease", textAlign: "center",
@@ -385,66 +325,100 @@ export default function Quiz() {
               fontSize: 52, marginBottom: 12,
               animation: "iconFloat 3s ease-in-out infinite", display: "inline-block",
             }}>✨</div>
+
             <h1 style={{
               fontSize: 28, fontWeight: 800,
               background: "linear-gradient(135deg, #e879f9, #c084fc, #60a5fa)",
               WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
               marginBottom: 8, letterSpacing: -1,
             }}>Class Poll</h1>
+
             <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 14, marginBottom: 32 }}>
-              Enter your name to begin
+              Select your roll number to begin
             </p>
 
+            {/* Roll number selector */}
             <div style={{
               background: "rgba(255,255,255,0.04)",
               border: `1px solid #c084fc44`,
               borderRadius: 20, padding: "20px 24px",
-              backdropFilter: "blur(16px)", marginBottom: 16,
+              backdropFilter: "blur(16px)", marginBottom: 8,
             }}>
+              <p style={{
+                color: "rgba(255,255,255,0.45)", fontSize: 12,
+                fontWeight: 600, letterSpacing: 1, textTransform: "uppercase",
+                marginBottom: 12, textAlign: "left",
+              }}>Your Roll Number</p>
+
               <div style={{
-                minHeight: 52, padding: "14px 16px",
-                fontSize: 20, fontWeight: 600,
-                color: nameInput ? "#fff" : "rgba(255,255,255,0.3)",
-                letterSpacing: 0.5, fontFamily: "'Sora', sans-serif",
-                textAlign: "left",
+                background: "rgba(255,255,255,0.04)",
+                border: `1px solid #c084fc44`,
+                borderRadius: 14, overflow: "hidden",
               }}>
-                {nameInput || "Your name…"}
-                <span style={{
-                  display: "inline-block", width: 2, height: 22,
-                  background: "#c084fc", marginLeft: 2, verticalAlign: "middle",
-                  animation: "pulseGlow 1s ease-in-out infinite",
-                  boxShadow: "0 0 8px #c084fc",
-                }}/>
+                <select
+                  value={studentRoll}
+                  onChange={e => { setStudentRoll(e.target.value); setStudentRollError(""); }}
+                  style={{
+                    width: "100%", padding: "16px 20px",
+                    background: "transparent",
+                    color: studentRoll ? "#fff" : "rgba(255,255,255,0.4)",
+                    fontSize: 17, fontWeight: 600, fontFamily: "'Sora', sans-serif",
+                    border: "none", outline: "none", cursor: "pointer",
+                    appearance: "none", WebkitAppearance: "none",
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7l5 5 5-5' stroke='%23c084fc' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: "right 16px center",
+                    backgroundSize: "20px",
+                  }}>
+                  <option value="" disabled style={{ background: "#1a1a2e", color: "rgba(255,255,255,0.5)" }}>
+                    Select your roll number…
+                  </option>
+                  {GROUP_ORDER.map(group => {
+                    const groupOpts = ROLL_OPTIONS.filter(o => o.group === group);
+                    if (!groupOpts.length) return null;
+                    return (
+                      <optgroup key={group} label={group} style={{ background: "#1a1a2e", color: "#c084fc" }}>
+                        {groupOpts.map(opt => (
+                          <option key={opt.value} value={opt.value}
+                            style={{ background: "#1a1a2e", color: "#fff", fontSize: 15 }}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </select>
               </div>
+
               <div style={{
-                height: 2,
+                height: 2, marginTop: 2,
                 background: "linear-gradient(90deg, transparent, #c084fc, #e879f9, transparent)",
                 borderRadius: 2, backgroundSize: "200% 100%",
                 animation: "shimmer 2s linear infinite",
               }}/>
             </div>
 
-            {nameError && (
-              <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>{nameError}</p>
+            {studentRollError && (
+              <p style={{ color: "#f87171", fontSize: 13, marginBottom: 8 }}>{studentRollError}</p>
             )}
 
-            <CustomKeyboard
-              accentColor="#c084fc"
-              onKey={handleNameKey}
-              onDelete={handleNameDelete}
-              onEnter={handleNameEnter}
-            />
+            {/* Start button */}
             <button
-              onPointerDown={(e) => { e.preventDefault(); setNameInput(v => v + " "); }}
+              onClick={handleRollEnter}
               style={{
-                marginTop: 6,
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid #c084fc33",
-                borderRadius: 10, color: "rgba(255,255,255,0.5)",
-                fontSize: 13, fontWeight: 600, padding: "8px 60px",
-                cursor: "pointer", fontFamily: "'Sora', sans-serif",
+                width: "100%", marginTop: 8,
+                background: studentRoll
+                  ? "linear-gradient(135deg, #c084fc, #e879f9)"
+                  : "rgba(255,255,255,0.08)",
+                border: `1px solid ${studentRoll ? "transparent" : "#c084fc33"}`,
+                borderRadius: 16, padding: "16px",
+                color: studentRoll ? "#fff" : "rgba(255,255,255,0.4)",
+                fontSize: 16, fontWeight: 800, cursor: "pointer",
+                letterSpacing: 2, fontFamily: "'Sora', sans-serif",
+                transition: "all 0.3s ease",
+                boxShadow: studentRoll ? "0 8px 32px #c084fc44" : "none",
               }}>
-              SPACE
+              START VOTING →
             </button>
 
             <div style={{
@@ -465,7 +439,9 @@ export default function Quiz() {
           </div>
         )}
 
-        {/* === QUIZ === */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: quiz
+        ════════════════════════════════════════════════ */}
         {phase === "quiz" && (
           <div style={{
             width: "100%", maxWidth: 420, zIndex: 1,
@@ -473,6 +449,7 @@ export default function Quiz() {
           }}>
             <Particles color={accentColor} />
 
+            {/* Progress bar */}
             <div style={{
               width: "100%", height: 3,
               background: "rgba(255,255,255,0.08)",
@@ -487,6 +464,7 @@ export default function Quiz() {
               }}/>
             </div>
 
+            {/* Header row */}
             <div style={{
               display: "flex", justifyContent: "space-between",
               width: "100%", marginBottom: 12, alignItems: "center",
@@ -497,12 +475,13 @@ export default function Quiz() {
                 color: accentColor, fontSize: 12, fontWeight: 700,
                 padding: "4px 12px", borderRadius: 99, letterSpacing: 1,
                 maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
-              }}>👤 {studentName}</span>
+              }}>👤 {studentRoll}</span>
               <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 600 }}>
                 {currentQ + 1} / {questions.length}
               </span>
             </div>
 
+            {/* Question card */}
             <div key={currentQ} style={{
               width: "100%",
               animation: animDir === "in"
@@ -547,6 +526,7 @@ export default function Quiz() {
                 }}>{q.text}</h2>
               </div>
 
+              {/* Answer roll selector */}
               <div style={{ width: "100%", padding: "0 4px", marginBottom: 16 }}>
                 <div style={{
                   background: "rgba(255,255,255,0.04)",
@@ -620,7 +600,9 @@ export default function Quiz() {
           </div>
         )}
 
-        {/* === SUBMITTING === */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: submit
+        ════════════════════════════════════════════════ */}
         {phase === "submit" && (
           <div style={{ textAlign: "center", animation: "scaleIn 0.5s ease", zIndex: 1 }}>
             <div style={{ fontSize: 60, marginBottom: 16, animation: "iconFloat 2s ease-in-out infinite" }}>⏳</div>
@@ -628,7 +610,9 @@ export default function Quiz() {
           </div>
         )}
 
-        {/* === DONE === */}
+        {/* ═══════════════════════════════════════════════
+            PHASE: done
+        ════════════════════════════════════════════════ */}
         {phase === "done" && (
           <div style={{
             textAlign: "center",
@@ -662,7 +646,7 @@ export default function Quiz() {
               color: "rgba(255,255,255,0.65)",
               fontSize: 16, lineHeight: 1.7, marginBottom: 24,
             }}>
-              Thank you for participating, <strong style={{ color: "#fff" }}>{studentName}</strong>! 🌟
+              Thank you for participating, <strong style={{ color: "#fff" }}>{studentRoll}</strong>! 🌟
             </p>
 
             <div style={{
@@ -682,6 +666,7 @@ export default function Quiz() {
             </div>
           </div>
         )}
+
       </div>
     </>
   );
